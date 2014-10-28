@@ -1,0 +1,10 @@
+# Create radioactive source
+/gps/particle ion 
+/gps/ion 38 90 0 0. # SR-90
+/gps/energy 0. keV  # primary ion at rest
+/gps/pos/type Volume
+/gps/pos/shape Cylinder
+/gps/pos/radius 10 mm
+/gps/pos/halfz 0.65 mm
+/gps/pos/centre 0. 0. -2 cm 
+

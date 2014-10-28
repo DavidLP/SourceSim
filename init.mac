@@ -1,0 +1,26 @@
+# Init
+/control/verbose 0
+/control/saveHistory
+/run/verbose 0
+
+# set physics, std. physics is sufficient. 
+# Only change when you know what you are doing!
+#/setup/physics/SelectHadronPhysics QGSP_BERT_HP
+#/setup/physics/SelectEMPhysics emstandard_opt4
+#/setup/physics/SelectDecayPhysics decay
+#/setup/physics/SelectHadronPhysics radioactivedecay
+
+# definition of histograms (id, n_bins, min, max, unit)
+/analysis/h1/set 1 100 0 3 GeV		#primary Energy Distribution
+/analysis/h1/set 2 100 0 200 keV	#Energy deposit in sensor
+/analysis/h1/set 3 120 0 500 um		#Track length in sensor
+/analysis/h1/set 4 120 0 30 deg		#Track In angle
+/analysis/h1/set 5 120 0 30 deg		#Track Out angle
+/analysis/h1/set 6 200 0 3 MeV		#Source primary energy Distribution
+/analysis/h1/set 7 100 -6 6 um		#Sensor hit x Distribution
+/analysis/h1/set 8 100 -6 6 um		#Sensor hit y Distribution
+/analysis/h1/set 9 100 0 200 keV	#Energy deposit in sensor(triggered)
+/analysis/h1/set 10 100 0 3 MeV		#Primary Energy Distribution Before Shield
+/analysis/h1/set 11 100 0 3 MeV		#Primary Energy Distribution After Shield
+/analysis/h1/set 12 100 0 1			#dE/dx in sensor
+/analysis/h2/set 13 100 100 0 1 0 1 #test

@@ -1,0 +1,37 @@
+# Energy deposit of 1 MeV electrons
+# in 530 um silicon sensor.
+# M.J.Berger et al. NIM 69 (1969) page 181.
+# Based on ther GEANT4 Em5 example.
+#     		    
+/control/verbose 2
+/run/verbose 2
+#
+/setup/sensor/material G4_Si      
+/setup/sensor/thickness 530 um
+/setup/sensor/xy 1 cm
+#
+/run/initialize
+#
+/gps/particle e- 
+/gps/energy 1 MeV
+/gps/direction 0 0 1
+/gps/position 0 0 -530 um
+#
+# definition of histograms (id, n_bins, min, max, unit)
+/analysis/h1/set 1 100 0 3 GeV		#primary Energy Distribution
+/analysis/h1/set 2 105  0  1.05 MeV	#Energy deposit in sensor
+/analysis/h1/set 3 120 0 500 um		#Track length in sensor
+/analysis/h1/set 4 120 0 30 deg		#Track In angle
+/analysis/h1/set 5 120 0 30 deg		#Track Out angle
+/analysis/h1/set 6 200 0 3 MeV		#Source primary energy Distribution
+/analysis/h1/set 7 100 -6 6 mm		#Primary x Distribution
+/analysis/h1/set 8 100 -6 6 mm		#Primary y Distribution
+/analysis/h1/set 9 100 0 200 keV	#Energy deposit in sensor(triggered)
+/analysis/h1/set 10 100 0 3 MeV		#Primary Energy Distribution Before Shield
+/analysis/h1/set 11 100 0 3 MeV		#Primary Energy Distribution After Shield
+/analysis/h1/set 12 100 0 1 keV/um	#dE/dx in sensor
+/analysis/setFileName unit_test_2.root 
+#
+/run/printProgress 100000
+# 
+/run/beamOn 1000000
