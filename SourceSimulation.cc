@@ -82,8 +82,8 @@ int main(int argc,char** argv)
   G4UImanager* UImanager = G4UImanager::GetUIpointer();
 
   // Set initialization classes
-  runManager->SetUserInitialization(new DetectorConstruction());  // FIXME: seg fault on delete
-  runManager->SetUserInitialization(new LBE()); //or: new LBE / new FTFP_BERT / new QGSP_BERT  // FIXME: seg fault on delete
+  runManager->SetUserInitialization(new DetectorConstruction());
+  runManager->SetUserInitialization(new PhysicsList()); //or: new LBE / new FTFP_BERT / new QGSP_BERT
   runManager->SetUserInitialization(new ActionInitialization());
 
   G4VisManager* visManager = new G4VisExecutive;
