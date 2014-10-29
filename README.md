@@ -1,0 +1,1 @@
+This software is under heavy development right now. Nevertheless only compiling revisions are comitted to the master branch. The Readme/wiki will be build soon. So far please contact the author if you have any questions.
