@@ -8,7 +8,7 @@ HistoManager::HistoManager() :
 {
 	G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
 	G4cout << "HistoManager: Using " << analysisManager->GetType() << G4endl;
-	new G4UnitDefinition("keV/micrometer", "keV/um", "dedx", keV/micrometer);  // define new unit for dedx values
+	new G4UnitDefinition("keV/micrometer", "keV/um", "dedx", keV / micrometer);  // define new unit for dedx values
 	book();
 }
 
@@ -32,34 +32,34 @@ void HistoManager::book()
 				"26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49" };
 
 	const G4String title[] =
-		{ "dummy", //0
-				"Primary Energy Distribution", //1
-				"Energy deposit in sensor", //2
-				"Track length in sensor", //3
-				"Track Out angle", //4
-				"Track Out angle", //5
-				"Source primary energy Distribution", //6
-				"Primary x Distribution", //7
-				"Primary y Distribution", //8
-				"Energy deposit in sensor(triggered)", //9
-				"Primary Energy Distribution Before Shield", //10
-				"Primary Energy Distribution After Shield", //11
-				"dE/dx in sensor" //12
+		{ "Primary energy distribution", //0
+				"Primary x Distribution", //1
+				"Primary y Distribution", //2
+				"Secondary electrons energy distribution", //3
+				"Secondary photons energy distribution", //4
+				"Shield particle energy distribution (entering)", //5
+				"Shield particle energy distribution (leaving)", //6
+				"Sensor energy deposit", //7
+				"Sensor track length", //8
+				"Sensor track In angle (dTheta)", //9
+				"Sensor track Out angle (dTheta/dOmega)", //10
+				"Sensor energy deposit (triggered)", //11
+				"Sensor dE/dx" //12
 			};
 
-	dataType.push_back("NotSupported"); //0
-	dataType.push_back("Energy"); //1
-	dataType.push_back("Energy");//2
-	dataType.push_back("Length");//3
-	dataType.push_back("Angle");//4
-	dataType.push_back("Angle");//5
-	dataType.push_back("Energy");//6
-	dataType.push_back("Length");//7
-	dataType.push_back("Length");//8
-	dataType.push_back("Energy");//9
-	dataType.push_back("Energy");//10
-	dataType.push_back("Energy");//11
-	dataType.push_back("dedx");//12
+	dataType.push_back("Energy"); //0
+	dataType.push_back("Length"); //1
+	dataType.push_back("Length"); //2
+	dataType.push_back("Energy"); //3
+	dataType.push_back("Energy"); //4
+	dataType.push_back("Energy"); //5
+	dataType.push_back("Energy"); //6
+	dataType.push_back("Energy"); //7
+	dataType.push_back("Length"); //8
+	dataType.push_back("Angle"); //9
+	dataType.push_back("Angle"); //10
+	dataType.push_back("Energy"); //11
+	dataType.push_back("dedx"); //12
 
 	// Default values (to be reset via /analysis/h1/set command)
 	G4int nbins = 100;
@@ -79,16 +79,16 @@ void HistoManager::printStats()
 {
 	G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
 	for (unsigned int i = 0; i < dataType.size(); ++i) {
-		if (analysisManager->GetH1(i, false, true) != 0)
-		{
-			G4cout << i <<"\t"<<analysisManager->GetH1Title(i) <<", 1 dim, "<< analysisManager->GetH1(i)->entries()<< " entries:\n\t\t mean = " << G4BestUnit(analysisManager->GetH1(i)->mean(), dataType[i])
-			<< " rms = " << G4BestUnit(analysisManager->GetH1(i)->rms(), dataType[i]) << G4endl;
-		}
-		else if (analysisManager->GetH2(i, false, true) != 0){
-			G4cout << i <<"\t"<<analysisManager->GetH2Title(i) <<", 2 dim, "<< analysisManager->GetH2(i)->entries()<< G4endl;
+		if (analysisManager->GetH1(i, false, true) != 0) {
+			G4cout << i << "\t"
+					<< analysisManager->GetH1Title(i) <<", 1 dim, "<< analysisManager->GetH1(i)->entries()<< " entries:\n\t\t mean = "
+					<< analysisManager->GetH1(i)->mean() << " "<< analysisManager->GetH1XAxisTitle(i)<<" rms = "
+					<< analysisManager->GetH1(i)->rms() << " " << analysisManager->GetH1XAxisTitle(i)<<G4endl;
+		} else if (analysisManager->GetH2(i, false, true) != 0) {
+			G4cout << i << "\t" << analysisManager->GetH2Title(i) << ", 2 dim, " << analysisManager->GetH2(i)->entries() << G4endl;
 		}
 		else
-			G4cout << "Hist with index "<< i << " does not exist." <<G4endl;
+		G4cout << "Hist with index "<< i << " does not exist." <<G4endl;
 	}
 }
 

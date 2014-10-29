@@ -30,7 +30,7 @@ DetectorMessenger::~DetectorMessenger()
 	delete fCollDir;
 	delete fSourceShieldDir;
 	delete fShieldDir;
-//
+
 	delete fWorldMaterCmd;
 	delete fWorldZCmd;
 	delete fWorldXYCmd;

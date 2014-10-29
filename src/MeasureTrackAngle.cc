@@ -53,11 +53,6 @@ G4bool MeasureTrackAngle::ProcessHits(G4Step* aStep, G4TouchableHistory*) {
 			G4double theta_in = localdir_in.theta();
 			if ( weighted ) theta_in*=preStep->GetWeight(); // Current (Particle Weight)
 			EvtAngleMap->add(GetIndex(aStep), theta_in);
-
-			// store primary energy distribution
-			G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
-			analysisManager->FillH1(7, localpos_in.x());
-			analysisManager->FillH1(8, localpos_in.y());
 		}
 	}
 

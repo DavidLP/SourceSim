@@ -37,14 +37,14 @@
 
 PhysicsList::PhysicsList():G4VModularPhysicsList(),
 		  fPMessenger(0),
-		  fCutForGamma(1. * um),
-		  fCutForElectron(1. * um),
-		  fCutForPositron(1. * um),
+		  fCutForGamma(10. * um),
+		  fCutForElectron(10. * um),
+		  fCutForPositron(10. * um),
 		  fDetectorCuts(0),
 		  fTargetCuts(0)
 {
 	G4LossTableManager::Instance();
-	defaultCutValue = 1. * um;
+	defaultCutValue = 10. * um;
 
 	fPMessenger = new PhysicsListMessenger(this);
 
@@ -54,7 +54,7 @@ PhysicsList::PhysicsList():G4VModularPhysicsList(),
 
 PhysicsList::~PhysicsList()
 {
-	delete fPMessenger;  //FIXME: causes seg-fault, who owns that? The runmanager?!
+	delete fPMessenger;
 }
 
 void PhysicsList::init_std_physics()

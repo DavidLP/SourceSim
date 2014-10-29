@@ -7,12 +7,12 @@
 #include "G4SystemOfUnits.hh"
 
 RunAction::RunAction() :
-		G4UserRunAction(), fHistoManager() {
+		G4UserRunAction(), fHistoManager(0) {
 	// set printing event number per each event
 	G4RunManager::GetRunManager()->SetPrintProgress(1);
 
 //	// Book predefined histograms
-//	fHistoManager = new HistoManager();
+	fHistoManager = new HistoManager();
 
 //	 Creating ntuple
 //	analysisManager->CreateNtuple("DeDx", "Energy deposit and track length");
@@ -22,8 +22,7 @@ RunAction::RunAction() :
 }
 
 RunAction::~RunAction() {
-//	delete fHistoManager;
-//	fHistoManager = 0;
+	delete fHistoManager;
 }
 
 void RunAction::BeginOfRunAction(const G4Run* /*run*/) {
@@ -38,15 +37,14 @@ void RunAction::BeginOfRunAction(const G4Run* /*run*/) {
 }
 
 void RunAction::EndOfRunAction(const G4Run* /*run*/) {
+	// print histogram statistics
+	fHistoManager->printStats();
+
 	// save histograms
 	G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
 	if (analysisManager->IsActive()) {
 		analysisManager->Write();
 		analysisManager->CloseFile();
 	}
-
-	// print histogram statistics
-	G4cout << "\n ---- Histograms statistic ---- \n";
-	fHistoManager.printStats();
 }
 

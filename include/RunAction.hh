@@ -17,7 +17,7 @@ public:
 
 private:
 	void book();
-	HistoManager fHistoManager;
+	HistoManager* fHistoManager;
 
 };
 

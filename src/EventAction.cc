@@ -75,58 +75,55 @@ void EventAction::EndOfEventAction(const G4Event* event)
 	if (fSensorEdepHCID != -1){
 		G4THitsMap<G4double>* hcEloss = GetHitsCollection(fSensorEdepHCID, event);
 		edep = GetSum(hcEloss);
-		analysisManager->FillH1(2, edep);
+		analysisManager->FillH1(7, edep);
 	}
 
 	if (fSensorTrackLengthHCID != -1){
 		G4THitsMap<G4double>* hcTLength = GetHitsCollection(fSensorTrackLengthHCID, event);
 		trackLength = GetSum(hcTLength);
-		analysisManager->FillH1(3, trackLength);
+		analysisManager->FillH1(8, trackLength);
 	}
 
-	if (fSensorEdepHCID != -1 && fSensorTrackLengthHCID != -1){
+	if (trackLength > 0. && fSensorEdepHCID != -1 && fSensorTrackLengthHCID != -1){
 		analysisManager->FillH1(12, edep / trackLength);
 	}
 
 	if (fSensorTrackAngleInHCID != -1){
 		G4THitsMap<G4double>* hcInAngle = GetHitsCollection(fSensorTrackAngleInHCID, event);
 		for (std::map<G4int, G4double*>::iterator it = hcInAngle->GetMap()->begin(); it != hcInAngle->GetMap()->end(); ++it)
-			analysisManager->FillH1(4, *(it->second));
+			analysisManager->FillH1(9, *(it->second));
 	}
 
 	if (fSensorTrackAngleOutHCID != -1){
 		G4THitsMap<G4double>* hcOutAngle = GetHitsCollection(fSensorTrackAngleOutHCID, event);
 		for (std::map<G4int, G4double*>::iterator it = hcOutAngle->GetMap()->begin(); it != hcOutAngle->GetMap()->end(); ++it){
 			G4double theta = *(it->second);
-			analysisManager->FillH1(4, theta);
 			G4double dteta  = analysisManager->GetH1Width(4);
 			G4double unit   = analysisManager->GetH1Unit(4);
 			G4double weight = (unit*unit)/(CLHEP::twopi*std::sin(theta)*dteta);
-			analysisManager->FillH1(5,theta,weight);
+			analysisManager->FillH1(10,theta,weight);
 		}
 	}
 
 	if (fTriggerHCID != -1){
 		G4THitsMap<G4double>* hcTrigger = GetHitsCollection(fTriggerHCID, event);
 		if (hcTrigger->GetSize() > 0)  // there is at least one hit in the trigger volume
-			analysisManager->FillH1(9, edep);
+			analysisManager->FillH1(11, edep);
 	}
 
+	if (fShieldInHCID != -1){
+		G4THitsMap<G4double>* hcInEnergy = GetHitsCollection(fShieldInHCID, event);
+		for (std::map<G4int, G4double*>::iterator it = hcInEnergy->GetMap()->begin(); it != hcInEnergy->GetMap()->end(); ++it)
+			analysisManager->FillH1(5, *(it->second));
+	}
 
-//	G4THitsMap<G4double>* hcInEnergy = GetHitsCollection(fShieldInHCID, event);
-//	G4THitsMap<G4double>* hcOutEnergy = GetHitsCollection(fShieldOutHCID, event);
+	if (fShieldOutHCID != -1){
+		G4THitsMap<G4double>* hcOutEnergy = GetHitsCollection(fShieldOutHCID, event);
+		for (std::map<G4int, G4double*>::iterator it = hcOutEnergy->GetMap()->begin(); it != hcOutEnergy->GetMap()->end(); ++it)
+			analysisManager->FillH1(6, *(it->second));
+	}
 
-
-	//add in/out particle energy
-//	for (std::map<G4int, G4double*>::iterator it = hcInEnergy->GetMap()->begin(); it != hcInEnergy->GetMap()->end(); ++it)
-//		analysisManager->FillH1(10, *(it->second));
-//	for (std::map<G4int, G4double*>::iterator it = hcOutEnergy->GetMap()->begin(); it != hcOutEnergy->GetMap()->end(); ++it)
-//		analysisManager->FillH1(11, *(it->second));
-
-	// add eloss for triggered hits only
-
-
-	// fill ntuple
+// fill ntuple
 //	analysisManager->FillNtupleDColumn(0, edep);
 //	analysisManager->FillNtupleDColumn(1, trackLength);
 //	analysisManager->AddNtupleRow();

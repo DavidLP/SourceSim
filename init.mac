@@ -11,16 +11,16 @@
 #/setup/physics/SelectHadronPhysics radioactivedecay
 
 # definition of histograms (id, n_bins, min, max, unit)
-/analysis/h1/set 1 100 0 3 GeV		#primary Energy Distribution
-/analysis/h1/set 2 100 0 200 keV	#Energy deposit in sensor
-/analysis/h1/set 3 120 0 500 um		#Track length in sensor
-/analysis/h1/set 4 120 0 30 deg		#Track In angle
-/analysis/h1/set 5 120 0 30 deg		#Track Out angle
-/analysis/h1/set 6 200 0 3 MeV		#Source primary energy Distribution
-/analysis/h1/set 7 100 -6 6 um		#Sensor hit x Distribution
-/analysis/h1/set 8 100 -6 6 um		#Sensor hit y Distribution
-/analysis/h1/set 9 100 0 200 keV	#Energy deposit in sensor(triggered)
-/analysis/h1/set 10 100 0 3 MeV		#Primary Energy Distribution Before Shield
-/analysis/h1/set 11 100 0 3 MeV		#Primary Energy Distribution After Shield
-/analysis/h1/set 12 100 0 1			#dE/dx in sensor
-/analysis/h2/set 13 100 100 0 1 0 1 #test
+/analysis/h1/set 0 500 0 5 GeV		#Primary Energy Distribution
+/analysis/h1/set 1 500 -10 10 mm	#Primary x Distribution
+/analysis/h1/set 2 500 -10 10 mm	#Primary y Distribution
+/analysis/h1/set 3 200 0 3 MeV		#Secondary electrons energy distribution (e.g. ion decay)
+/analysis/h1/set 4 200 0 200 keV	#Secondary photons energy distribution
+/analysis/h1/set 5 100 0 5 GeV		#Shield particle energy distribution (before)
+/analysis/h1/set 6 100 0 5 GeV		#Shield particle energy distribution (after)
+/analysis/h1/set 7 100 0 200 keV	#Sensor energy deposit
+/analysis/h1/set 8 120 0 500 um		#Sensor track length
+/analysis/h1/set 9 120 0 30 deg		#Sensor track In angle
+/analysis/h1/set 10 120 0 30 deg	#Sensor track Out angle
+/analysis/h1/set 11 100 0 200 keV	#Sensor energy deposit (triggered)
+/analysis/h1/set 12 100 0 1 keV/um	#Sensor dE/dx

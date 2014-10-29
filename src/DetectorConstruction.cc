@@ -54,7 +54,6 @@ DetectorConstruction::DetectorConstruction() :
 DetectorConstruction::~DetectorConstruction()
 {
 	delete fDetectorMessenger;
-	fDetectorMessenger = 0;
 }
 
 G4VPhysicalVolume* DetectorConstruction::Construct()
@@ -78,6 +77,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 			false,//no boolean operation
 			0,//copy number
 			fCheckOverlaps);//overlaps checking
+	G4VisAttributes* worldVisAtt = new G4VisAttributes(G4Colour(0.0, 0.0, 0.0, 3./4.));
+	worldVisAtt->SetForceWireframe(true);
+	fLogicWorld->SetVisAttributes(worldVisAtt);
 
 	// Sensor
 	fSolidSensor = new G4Box("Sensor", 2 * cm / 2., 2 * cm / 2., 200 * um / 2.);
@@ -90,86 +92,95 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 			false,//no boolean operation
 			0,//copy number
 			fCheckOverlaps);//overlaps checking
-//
-//	//	Source shielding
-//	fSolidSourceShield = new G4Box("SourceShield", 3. * cm / 2., 3. * cm / 2., 1. * mm / 2.);
-//	fSourceShieldMaterial = G4NistManager::Instance()->FindOrBuildMaterial("G4_STAINLESS-STEEL");
-//	fLogicSourceShield = new G4LogicalVolume(fSolidSourceShield, fSourceShieldMaterial, "SourceShield");
-//	fPhysSourceShield = new G4PVPlacement(0,//no rotation
-//			G4ThreeVector(0, 0, -1.9 * cm),//at position
-//			fLogicSourceShield,//its logical volume
-//			"SourceShield",//its name
-//			fLogicWorld,//its mother volume
-//			false,//no boolean operation
-//			0,//copy number
-//			fCheckOverlaps);//overlaps checking
-//
-//	//	Source collimator, two cylinders with different material and small hole in the middle
-//	fSolidCollInner = new G4Tubs("CollimatorInner",
-//			500. * um,
-//			1. * cm,
-//			0.75 * cm,
-//			0. * deg,
-//			360. * deg);
-//	fSolidCollOuter = new G4Tubs("CollimatorOuter",
-//			1. * cm,
-//			2.5 * cm,
-//			0.75 * cm,
-//			0. * deg,
-//			360. * deg);
-//	fCollMaterialInner = G4NistManager::Instance()->FindOrBuildMaterial("G4_PLEXIGLASS");
-//	fCollMaterialOuter = G4NistManager::Instance()->FindOrBuildMaterial("G4_BRASS");
-//	fLogicCollInner = new G4LogicalVolume(fSolidCollInner, fCollMaterialInner, "CollimatorInner");
-//	fLogicCollOuter = new G4LogicalVolume(fSolidCollOuter, fCollMaterialOuter, "CollimatorOuter");
-//	fPhysCollInner = new G4PVPlacement(0,//no rotation
-//			G4ThreeVector(0, 0, -1. * cm),//at position
-//			fLogicCollInner,//its logical volume
-//			"CollimatorInner",//its name
-//			fLogicWorld,//its mother volume
-//			false,//no boolean operation
-//			0,//copy number
-//			fCheckOverlaps);//overlaps checking
-//	fPhysCollOuter = new G4PVPlacement(0,//no rotation
-//			G4ThreeVector(0, 0, -1. * cm),//at position
-//			fLogicCollOuter,//its logical volume
-//			"CollimatorOuter",//its name
-//			fLogicWorld,//its mother volume
-//			false,//no boolean operation
-//			0,//copy number
-//			fCheckOverlaps);//overlaps checking
-//
-//	//	Trigger
-//	fSolidTrigger = new G4Box("Trigger", 3.0 * cm / 2., 3.0 * cm / 2., 1.0 * cm / 2.);
-//	fTriggerMaterial = G4NistManager::Instance()->FindOrBuildMaterial("G4_Pb");
-//	fLogicTrigger = new G4LogicalVolume(fSolidTrigger, fSensorMaterial, "Trigger");
-//	fPhysTrigger = new G4PVPlacement(0,//no rotation
-//			G4ThreeVector(0, 0, 2 * cm),//at position
-//			fLogicTrigger,//its logical volume
-//			"Trigger",//its name
-//			fLogicWorld,//its mother volume
-//			false,//no boolean operation
-//			0,//copy number
-//			fCheckOverlaps);//overlaps checking
-//
-//	//	Setup shielding
-//	fSolidShield = new G4Box("Shield", 10. * cm / 2., 10. * cm / 2., 1. * cm / 2.);
-//	fShieldMaterial = G4NistManager::Instance()->FindOrBuildMaterial("G4_Pb");
-//	fLogicShield = new G4LogicalVolume(fSolidShield, fShieldMaterial, "Shield");
-//	fPhysShield = new G4PVPlacement(0,//no rotation
-//			G4ThreeVector(0, 0, 3. * cm),//at position
-//			fLogicShield,//its logical volume
-//			"Shield",//its name
-//			fLogicWorld,//its mother volume
-//			false,//no boolean operation
-//			0,//copy number
-//			fCheckOverlaps);//overlaps checking
+
+	//	Source shielding
+	fSolidSourceShield = new G4Box("SourceShield", 3. * cm / 2., 3. * cm / 2., 1. * mm / 2.);
+	fSourceShieldMaterial = G4NistManager::Instance()->FindOrBuildMaterial("G4_STAINLESS-STEEL");
+	fLogicSourceShield = new G4LogicalVolume(fSolidSourceShield, fSourceShieldMaterial, "SourceShield");
+	fPhysSourceShield = new G4PVPlacement(0,//no rotation
+			G4ThreeVector(0, 0, -1.9 * cm),//at position
+			fLogicSourceShield,//its logical volume
+			"SourceShield",//its name
+			fLogicWorld,//its mother volume
+			false,//no boolean operation
+			0,//copy number
+			fCheckOverlaps);//overlaps checking
+	G4VisAttributes* sourceShieldVisAtt = new G4VisAttributes(G4Colour(0.7, 0.7, 0.7, 3./4.));
+	fLogicSourceShield->SetVisAttributes(sourceShieldVisAtt);
+
+	//	Source collimator, two cylinders with different material and small hole in the middle
+	fSolidCollInner = new G4Tubs("CollimatorInner",
+			500. * um,
+			1. * cm,
+			0.75 * cm,
+			0. * deg,
+			360. * deg);
+	fSolidCollOuter = new G4Tubs("CollimatorOuter",
+			1. * cm,
+			2.5 * cm,
+			0.75 * cm,
+			0. * deg,
+			360. * deg);
+	fCollMaterialInner = G4NistManager::Instance()->FindOrBuildMaterial("G4_PLEXIGLASS");
+	fCollMaterialOuter = G4NistManager::Instance()->FindOrBuildMaterial("G4_BRASS");
+	fLogicCollInner = new G4LogicalVolume(fSolidCollInner, fCollMaterialInner, "CollimatorInner");
+	fLogicCollOuter = new G4LogicalVolume(fSolidCollOuter, fCollMaterialOuter, "CollimatorOuter");
+	fPhysCollInner = new G4PVPlacement(0,//no rotation
+			G4ThreeVector(0, 0, -1. * cm),//at position
+			fLogicCollInner,//its logical volume
+			"CollimatorInner",//its name
+			fLogicWorld,//its mother volume
+			false,//no boolean operation
+			0,//copy number
+			fCheckOverlaps);//overlaps checking
+	fPhysCollOuter = new G4PVPlacement(0,//no rotation
+			G4ThreeVector(0, 0, -1. * cm),//at position
+			fLogicCollOuter,//its logical volume
+			"CollimatorOuter",//its name
+			fLogicWorld,//its mother volume
+			false,//no boolean operation
+			0,//copy number
+			fCheckOverlaps);//overlaps checking
+	G4VisAttributes* collInnerVisAtt = new G4VisAttributes(G4Colour(240./255.,240./255.,222./255., 3./5.));
+	fLogicCollInner->SetVisAttributes(collInnerVisAtt);
+	G4VisAttributes* collOuterVisAtt = new G4VisAttributes(G4Colour(168./255.,132./255.,77./255., 3./4.));
+	fLogicCollOuter->SetVisAttributes(collOuterVisAtt);
+
+	//	Trigger
+	fSolidTrigger = new G4Box("Trigger", 3.0 * cm / 2., 3.0 * cm / 2., 1.0 * cm / 2.);
+	fTriggerMaterial = G4NistManager::Instance()->FindOrBuildMaterial("G4_Pb");
+	fLogicTrigger = new G4LogicalVolume(fSolidTrigger, fSensorMaterial, "Trigger");
+	fPhysTrigger = new G4PVPlacement(0,//no rotation
+			G4ThreeVector(0, 0, 2 * cm),//at position
+			fLogicTrigger,//its logical volume
+			"Trigger",//its name
+			fLogicWorld,//its mother volume
+			false,//no boolean operation
+			0,//copy number
+			fCheckOverlaps);//overlaps checking
+	G4VisAttributes* triggerVisAtt = new G4VisAttributes(G4Colour(240./255.,240./255.,222./255., 3./5.));
+	fLogicTrigger->SetVisAttributes(triggerVisAtt);
+
+	//	Setup shielding
+	fSolidShield = new G4Box("Shield", 10. * cm / 2., 10. * cm / 2., 1. * cm / 2.);
+	fShieldMaterial = G4NistManager::Instance()->FindOrBuildMaterial("G4_Pb");
+	fLogicShield = new G4LogicalVolume(fSolidShield, fShieldMaterial, "Shield");
+	fPhysShield = new G4PVPlacement(0,//no rotation
+			G4ThreeVector(0, 0, 3. * cm),//at position
+			fLogicShield,//its logical volume
+			"Shield",//its name
+			fLogicWorld,//its mother volume
+			false,//no boolean operation
+			0,//copy number
+			fCheckOverlaps);//overlaps checking
+	G4VisAttributes* shieldVisAtt = new G4VisAttributes(G4Colour(0.4, 0.4, 0.4));
+	fLogicShield->SetVisAttributes(shieldVisAtt);
 
 	return fPhysWorld;
 }
 
 void DetectorConstruction::ConstructSDandField()
 {
-//	return; ///
 	G4cout << " DetectorConstruction::ConstructSDandField()" << G4endl;
 	G4SDManager::GetSDMpointer()->SetVerboseLevel(1);
 
@@ -178,14 +189,14 @@ void DetectorConstruction::ConstructSDandField()
 	G4SDManager::GetSDMpointer()->AddNewDetector(siliconDetector);
 	fLogicSensor->SetSensitiveDetector(siliconDetector);
 
-//	G4MultiFunctionalDetector* triggerDetector = new G4MultiFunctionalDetector("Trigger");
-//	DefineTriggerScorers(triggerDetector);
-//	G4SDManager::GetSDMpointer()->AddNewDetector(triggerDetector);
-//	fLogicTrigger->SetSensitiveDetector(triggerDetector);
-//
-//	G4MultiFunctionalDetector* sourceshielding = new G4MultiFunctionalDetector("SourceShield");
-//	DefineShieldingScorers(sourceshielding);
-//	SetSensitiveDetector("SourceShield", sourceshielding);
+	G4MultiFunctionalDetector* triggerDetector = new G4MultiFunctionalDetector("Trigger");
+	DefineTriggerScorers(triggerDetector);
+	G4SDManager::GetSDMpointer()->AddNewDetector(triggerDetector);
+	fLogicTrigger->SetSensitiveDetector(triggerDetector);
+
+	G4MultiFunctionalDetector* sourceshielding = new G4MultiFunctionalDetector("SourceShield");
+	DefineShieldingScorers(sourceshielding);
+	SetSensitiveDetector("SourceShield", sourceshielding);
 }
 
 void DetectorConstruction::test()
