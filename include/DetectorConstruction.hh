@@ -23,12 +23,16 @@ class DetectorConstruction: public G4VUserDetectorConstruction {
 		void SetWorldMaterial(G4String);
 		void SetWorldSizeXY(G4double);
 		void SetWorldSizeZ(G4double);
+		G4double GetWorldSizeXY();
+		G4double GetWorldSizeZ();
 		// sensor
 		void SetSensorMaterial(G4String);
 		void SetSensorThickness(G4double);
 		void SetSensorSizeXY(G4double);
 		void SetSensorPos(G4ThreeVector pos);
 		void SetSensorRot(G4double phi);
+		G4double GetSensorSizeXY();
+		G4double GetSensorThickness();
 		// trigger
 		void SetTrigger(const bool&);
 		void SetTriggerMaterial(G4String);
