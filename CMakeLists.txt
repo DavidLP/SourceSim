@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
+cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 project(SourceSimulation)
 
 find_package(Geant4 REQUIRED ui_all vis_all)
@@ -31,5 +31,8 @@ foreach(_script ${SOURCESIMULATION_SCRIPTS})
     COPYONLY
     )
 endforeach()
+
+# Copy unit test folder to the build directory
+file(COPY unit_test DESTINATION ${PROJECT_BINARY_DIR})
 
 install(TARGETS SourceSimulation DESTINATION bin)

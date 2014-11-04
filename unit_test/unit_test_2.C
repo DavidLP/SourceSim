@@ -3,27 +3,14 @@
 
    // Draw histograms fill by Geant4 TestEm5 simulation
    TFile f1("./unit_test_2.root");
-   TH1D* h1 = (TH1D*) f1.Get("2");
-   h1->SetTitle("Energy deposited in 530 um of Si by 1 MeV e-");
-   h1->GetXaxis()->SetTitle("Ekine (MeV)");
+   TH1D* h1 = (TH1D*) f1.Get("7");
+   h1->SetTitle("Energy deposited in 530 um silicon by 1 MeV e-");
+   h1->GetXaxis()->SetTitle("Ekine (keV)");
    h1->GetYaxis()->SetTitle("nb / MeV");
    h1->Scale(7.6 / h1->GetMaximum());
    h1->SetStats(kFALSE);  // Eliminate statistics box
    h1->SetLineColor(1);   // black
    h1->Draw("HIST");
- /*  
-   TFile f2("./local.root");
-   TH1D* h2 = (TH1D*) f2.Get("1");
-   h2->SetStats(kFALSE);  // Eliminate statistics box
-   h2->SetLineColor(4);   // blue
-   h2->Scale(7.6 / h2->GetMaximum());
-   h2->Draw("SAME HIST");*/
-/*
-* e- 1 MeV in Silicon 530 um 
-* M.J. Berger et al. NIM 69 (p.181) 1969
-* distribution of energy deposition
-* (from 110 keV to 1.03 MeV by bin of 10 keV --> 93 bins) 
-*/
 
    ifstream in;
    in.open("530um.ascii");
@@ -33,15 +20,16 @@
    in >> nbdata;
    
    // Create a new histogram with data.acsii values
-   float x_min = 0.110;
-   float x_max = 1.030;
+   float x_min = 110;
+   float x_max = 1030;
    TH1F* h3 = new TH1F("h1f","",nbdata,x_min,x_max);
 
    Float_t x, y;
    while (1) {
       in >> x >> y ;
       if (!in.good()) break;
-      h3->Fill(x,y);
+      h3->Fill(x * 1000.,y);
+      cout<<x<<"\t"<<y<<"\n";
    }
    in.close();
 
@@ -54,6 +42,4 @@
    legend->AddEntry(h1,"Simulation","l");  
    legend->AddEntry(h3,"Data","L");
    legend->Draw();
-
-
 }
