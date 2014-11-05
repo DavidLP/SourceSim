@@ -12,7 +12,7 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 add_executable(SourceSimulation SourceSimulation.cc ${sources} ${headers})
 target_link_libraries(SourceSimulation ${Geant4_LIBRARIES})
 
-# Copy scripts to the build directory
+# Copy scripts and data files to the build directory
 set(SOURCESIMULATION_SCRIPTS
   icons.mac
   gui.mac
@@ -23,6 +23,7 @@ set(SOURCESIMULATION_SCRIPTS
   unit_test_2.mac
   vis.mac
   beam.mac
+  Sr_90_energy.dat
   )
 foreach(_script ${SOURCESIMULATION_SCRIPTS})
   configure_file(
