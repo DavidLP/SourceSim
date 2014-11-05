@@ -28,9 +28,10 @@
 /gui/addButton physics "DECAY_Radioactive Decay" "/setup/physics/SelectDecayPhysics radioactivedecay"
 
 # Source menu :
-/gui/addMenu source Source
+/gui/addMenu source Setup
 /gui/addButton source "Beam"      "/control/execute beam.mac"
-/gui/addButton source "Source"   "/control/execute source.mac"
+/gui/addButton source "Source (exact)"   "/control/execute source.mac"
+/gui/addButton source "Source (fast)"   "/control/execute source_fast.mac"
 
 # Viewer menu :
 /gui/addMenu viewer Viewer
