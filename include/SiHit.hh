@@ -31,17 +31,22 @@ class SiHit: public G4VHit
 
 		// methods to handle data
 		void Add(G4double de, G4double dl);
-		void SetVolumeIdentifier(const G4int& volumeID) const
+		void SetVolumeIdX(const G4int& volumeIDx);
+		void SetVolumeIdY(const G4int& volumeIDy);
+		void SetPosition(const G4ThreeVector& position);
 
 		// get methods
 		G4double GetEdep() const;
 		G4double GetTrackLength() const;
-		G4int GetVolumeIdentifier() const;
+		G4int GetVolumeIdX() const;
+		G4int GetVolumeIdY() const;
+		G4ThreeVector GetPosition() const;
 
 	private:
 		G4double fEdep;        ///< Energy deposit in the sensitive volume
 		G4double fTrackLength;  ///< Track length in the  sensitive volume
-		G4int fCopyNumber;  ///< the sensitive volume identifier (here: pixel)
+		G4int fVolumeIdX, fVolumeIdY;  ///< the sensitive volume identifier (here: pixel)
+		G4ThreeVector fPosition; ///the position with respect to the global world mean
 };
 
 typedef G4THitsMap<SiHit> SiHitsMap;
@@ -80,14 +85,34 @@ inline G4double SiHit::GetTrackLength() const
 	return fTrackLength;
 }
 
-inline void SiHit::SetVolumeIdentifier(const G4int& volumeID) const
+inline void SiHit::SetVolumeIdX(const G4int& volumeIdX)
 {
-	fCopyNumber = volumeID;
+	fVolumeIdX = volumeIdX;
 }
 
-inline G4int SiHit::GetVolumeIdentifier() const
+inline void SiHit::SetVolumeIdY(const G4int& volumeIdY)
 {
-	return fCopyNumber;
+	fVolumeIdY = volumeIdY;
+}
+
+inline G4int SiHit::GetVolumeIdX() const
+{
+	return fVolumeIdX;
+}
+
+inline G4int SiHit::GetVolumeIdY() const
+{
+	return fVolumeIdY;
+}
+
+inline void SiHit::SetPosition(const G4ThreeVector& position)
+{
+	fPosition = position;
+}
+
+inline G4ThreeVector SiHit::GetPosition() const
+{
+	return fPosition;
 }
 
 #endif
