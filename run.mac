@@ -22,17 +22,22 @@
 #/gps/energy 0. keV  # primary ion at rest
 
 # create from energy distribution hist (fast)
-/gps/ene/type Arb
-/gps/hist/file Sr_90_1mmShield_energy.dat
-/gps/hist/inter Lin
-/gps/ang/type iso
-/gps/ang/mintheta 135 deg
-/gps/ang/maxtheta 180 deg
+#/gps/ene/type Arb
+#/gps/hist/file Sr_90_1mmShield_energy.dat
+#/gps/hist/inter Lin
+#/gps/ang/type iso
+#/gps/ang/mintheta 135 deg
+#/gps/ang/maxtheta 180 deg
+
+/gps/particle e- 
+/gps/energy 3.2 GeV
+/gps/direction 0 0 1
+/gps/position 0. 0. -8 cm
 
 # position
 /gps/pos/type Volume
 /gps/pos/shape Cylinder
-/gps/pos/radius 10 mm
+/gps/pos/radius 7 mm
 /gps/pos/halfz 0.65 mm
 /gps/pos/centre 0. 0. -2 cm
 
@@ -42,5 +47,5 @@
 /setup/trigger/enable 1
 /setup/sourceshield/enable 0
 
-/run/beamon 10
+/run/beamOn 10
 
