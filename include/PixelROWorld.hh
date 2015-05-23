@@ -14,7 +14,7 @@ class PixelROWorld: public G4VUserParallelWorld
 		virtual void ConstructSD();
 
 	private:
-		G4int fNpixel;
+		G4int fNxPixel, fNyPixel;
 
 };
 
