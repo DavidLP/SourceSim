@@ -1,3 +1,5 @@
 .gitignore~
 init.mac~
 vis.mac~
+.cproject
+.project
