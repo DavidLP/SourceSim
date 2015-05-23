@@ -14,7 +14,7 @@ class G4HCofThisEvent;
 class PixelDetectorSD: public G4VSensitiveDetector
 {
 	public:
-		PixelDetectorSD(const G4String& name, const G4String& hitsCollectionName, G4int nofCells);
+		PixelDetectorSD(const G4String& name, const G4String& hitsCollectionName);
 		virtual ~PixelDetectorSD();
 
 		// methods from base class
@@ -24,7 +24,6 @@ class PixelDetectorSD: public G4VSensitiveDetector
 
 	private:
 		SiHitsMap* fHitsMap;
-		G4int fNpixel;
 };
 
 #endif

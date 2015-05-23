@@ -7,10 +7,10 @@
 
 #include <iostream>
 
-const G4int maxHits = 20; // maximum number of hits in one event that are stored
+const G4int maxHits = 100; // maximum number of hits in one event that are stored
 
-PixelDetectorSD::PixelDetectorSD(const G4String& name, const G4String& hitsCollectionName, G4int nPixel) :
-		G4VSensitiveDetector(name), fHitsMap(0), fNpixel(nPixel)
+PixelDetectorSD::PixelDetectorSD(const G4String& name, const G4String& hitsCollectionName) :
+		G4VSensitiveDetector(name), fHitsMap(0)
 {
 	collectionName.insert(hitsCollectionName);
 }
@@ -31,7 +31,8 @@ void PixelDetectorSD::Initialize(G4HCofThisEvent* hitCollection)
 	// Create hits
 	// fNpixel for pixel + one more for total sums
 	for (G4int i = 0; i < maxHits; i++) {
-		fHitsMap->add(i, new SiHit());
+		SiHit* t = new SiHit();
+		fHitsMap->add(i, t);
 	}
 }
 
@@ -57,14 +58,23 @@ G4bool PixelDetectorSD::ProcessHits(G4Step* step, G4TouchableHistory* history)
 		G4Exception("PixelDetectorSD::ProcessHits()", "MyCode0004", FatalException, msg);
 	}
 
-	// Get hit pixel id
-	G4int iVolume = touchable->GetReplicaNumber(0);
-
-	// Get hit accounting data for this pixel
-	(*fHitsMap)[iVolume]->Add(edep, stepLength);
-
-	// Get hit for total accounting
-	(*fHitsMap)[fNpixel]->Add(edep, stepLength);
+	for (std::map<G4int, SiHit*>::iterator it = fHitsMap->GetMap()->begin(); it != fHitsMap->GetMap()->end(); ++it){
+//	Per pixel steps accumulation would correspond to some digitization, this should be independent thus no histograming here
+//		if (it->second->GetVolumeIdentifier() == iVolume){  // hits already exist, so add this step to it
+//			it->second->Add(edep, stepLength);
+//			break;
+//		}
+		if (it->second->GetVolumeIdX() == -1){
+			G4cout << G4endl;
+			G4cout << "VOLUMEID "<<touchable->GetReplicaNumber(0)<<"\t"<<touchable->GetReplicaNumber(1)<<G4endl;
+			G4cout << G4endl;
+			it->second->SetVolumeIdX(touchable->GetReplicaNumber(0));
+			it->second->SetVolumeIdY(touchable->GetReplicaNumber(1));
+			it->second->Add(edep, stepLength);
+			it->second->SetPosition(step->GetPreStepPoint()->GetPosition());
+			break;
+		}
+	}
 
 	return true;
 }
