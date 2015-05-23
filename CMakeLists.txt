@@ -23,7 +23,9 @@ set(SOURCESIMULATION_SCRIPTS
   unit_test_2.mac
   vis.mac
   beam.mac
+  run.mac
   Sr_90_energy.dat
+  Sr_90_1mmShield_energy.dat
   )
 foreach(_script ${SOURCESIMULATION_SCRIPTS})
   configure_file(
