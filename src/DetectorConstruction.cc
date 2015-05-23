@@ -99,64 +99,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
 	fLogicSensor->SetVisAttributes(new G4VisAttributes(G4Colour(0.5, 0.5, 0.5, 3./4.)));
 
-//	G4double pitchX = 50 * um;
-//	G4double pitchY = 250 * um;
-//
-//	G4int Ncols = 5;
-//	G4int Nrows = 25;
-//
-//	fSolidSensor = new G4Box("Sensor", pitchX / 2., pitchY / 2., 200 * um / 2.);
-//	fLogicSensor = new G4LogicalVolume(fSolidSensor, fSensorMaterial, "Sensor");
-//
-//	G4int copyNr = 0;
-//
-//	for(G4int iCol = 0; iCol < Ncols; ++iCol){
-//		for(G4int iRow = 0; iRow < Nrows; ++iRow){
-//			fPhysSensor = new G4PVPlacement(0,//no rotation
-//				G4ThreeVector(iCol * (pitchX), -iRow * (pitchY), 0),//std. position
-//				fLogicSensor,//its logical volume
-//				"Sensor",//its name
-//				fLogicWorld,//its mother volume
-//				false,//no boolean operation
-//				copyNr++,//copy number
-//				fCheckOverlaps);//overlaps checking
-//		}
-//		G4cout<<copyNr<<G4endl;
-//	}
-
-//	fPhysSensor = new G4PVPlacement(0,//no rotation
-//					G4ThreeVector(1 * cm, -1 * cm, 0),//std. position
-//					fLogicSensor,//its logical volume
-//					"Sensor",//its name
-//					fLogicWorld,//its mother volume
-//					false,//no boolean operation
-//					1,//copy number
-//					fCheckOverlaps);//overlaps checking
-//	fPhysSensor = new G4PVPlacement(0,//no rotation
-//					G4ThreeVector(-1 * cm, 1 * cm, 0),//std. position
-//					fLogicSensor,//its logical volume
-//					"Sensor",//its name
-//					fLogicWorld,//its mother volume
-//					false,//no boolean operation
-//					2,//copy number
-//					fCheckOverlaps);//overlaps checking
-//	fPhysSensor = new G4PVPlacement(0,//no rotation
-//					G4ThreeVector(1 * cm, 1 * cm, 0),//std. position
-//					fLogicSensor,//its logical volume
-//					"Sensor",//its name
-//					fLogicWorld,//its mother volume
-//					false,//no boolean operation
-//					3,//copy number
-//					fCheckOverlaps);//overlaps checking
-//	fPhysSensor = new G4PVPlacement(0,//no rotation
-//						G4ThreeVector(-1 * cm, -1 * cm, 0),//std. position
-//						fLogicSensor,//its logical volume
-//						"Sensor",//its name
-//						fLogicWorld,//its mother volume
-//						false,//no boolean operation
-//						3,//copy number
-//						fCheckOverlaps);//overlaps checking
-
 	//	Source shielding
 	fSolidSourceShield = new G4Box("SourceShield", 3. * cm / 2., 3. * cm / 2., 1. * mm / 2.);
 	fSourceShieldMaterial = G4NistManager::Instance()->FindOrBuildMaterial("G4_STAINLESS-STEEL");
@@ -252,18 +194,6 @@ void DetectorConstruction::ConstructSDandField()
 	DefineSensorScorers(siliconDetector);
 	G4SDManager::GetSDMpointer()->AddNewDetector(siliconDetector);
 	fLogicSensor->SetSensitiveDetector(siliconDetector);
-
-
-//	PixelROGeometry* pixelReadOut = new PixelROGeometry("PixelROGeometry");
-//	pixelReadOut->BuildROGeometry();
-//	siliconDetector->SetROgeometry(pixelReadOut);
-
-//	TestSD* testSD = new TestSD("TestDetector");
-//	G4SDManager::GetSDMpointer()->AddNewDetector(testSD);
-//	PixelROGeometry* pixelReadOut = new PixelROGeometry("PixelROGeometry");
-//	pixelReadOut->BuildROGeometry();
-//	testSD->SetROgeometry(pixelReadOut);
-//	fLogicSensor->SetSensitiveDetector(testSD);
 
 	G4MultiFunctionalDetector* triggerDetector = new G4MultiFunctionalDetector("Trigger");
 	DefineTriggerScorers(triggerDetector);
