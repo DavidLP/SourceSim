@@ -18,8 +18,10 @@ RunAction::RunAction() :
 
 	//	 Creating ntuple
 	G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
-	analysisManager->CreateNtuple("DeDx", "Energy deposit and track length");
+	analysisManager->CreateNtuple("Silicon Hits", "A step within the detector");
 	analysisManager->CreateNtupleIColumn("Event");
+	analysisManager->CreateNtupleIColumn("VolumeIdX");
+	analysisManager->CreateNtupleIColumn("VolumeIdY");
 	analysisManager->CreateNtupleDColumn("EnergyDeposit");
 	analysisManager->CreateNtupleDColumn("TrackLength");
 	analysisManager->FinishNtuple();

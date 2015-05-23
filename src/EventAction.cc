@@ -94,16 +94,6 @@ void EventAction::EndOfEventAction(const G4Event* event)
 		G4cout<<"edep "<<edep<<G4endl;
 	}
 
-	if (fPixelDetectorHCID != -1) {
-		SiHitsMap* pixelhitmap = GetPixelHitsMap(fPixelDetectorHCID, event);
-		for (std::map<G4int, SiHit*>::iterator it = pixelhitmap->GetMap()->begin(); it != pixelhitmap->GetMap()->end(); ++it)
-			G4cout<<it->first<<"\t"<<it->second->GetEdep()<<"\t"<<it->second->GetVolumeIdentifier()<<G4endl;
-
-//		SiHit* pixelHit = (*hcpixel)[hcpixel->entries() - 1];
-//		for (G4int i = 0; i < hcpixel->entries(); ++i)
-//			G4cout<<i<<"\t"<<((*hcpixel)[i])->GetEdep()<<G4endl;
-	}
-
 	if (fSensorTrackLengthHCID != -1) {
 		G4THitsMap<G4double>* hcTLength = GetHitsCollection(fSensorTrackLengthHCID, event);
 		trackLength = GetSum(hcTLength);
@@ -151,16 +141,25 @@ void EventAction::EndOfEventAction(const G4Event* event)
 
 	G4int eventID = event->GetEventID();
 
-// fill ntuple
-	if (edep != 0 || trackLength != 0){
-		analysisManager->FillNtupleIColumn(0,  eventID);
-		analysisManager->FillNtupleDColumn(1, edep);
-		analysisManager->FillNtupleDColumn(2, trackLength);
-		analysisManager->AddNtupleRow();
+	if (fPixelDetectorHCID != -1) {
+		SiHitsMap* pixelhitmap = GetPixelHitsMap(fPixelDetectorHCID, event);
+//		for (std::map<G4int, SiHit*>::iterator it = pixelhitmap->GetMap()->begin(); it != pixelhitmap->GetMap()->end(); ++it){
+//			G4cout << it->first<<"   Total energy in sensor: " << std::setw(7) << G4BestUnit(it->second->GetEdep(), "Energy") << "   Total track length in sensor: " << G4BestUnit(it->second->GetTrackLength(), "Length") <<" volume id "<<it->second->GetVolumeIdentifier()<< G4endl;
+//		}
+		// fill ntuple
+		for (std::map<G4int, SiHit*>::iterator it = pixelhitmap->GetMap()->begin(); it != pixelhitmap->GetMap()->end(); ++it){
+			if (it->second->GetVolumeIdX() == -1)  // speed up
+				break;
+			analysisManager->FillNtupleIColumn(0, eventID);
+			analysisManager->FillNtupleIColumn(1, it->second->GetVolumeIdX());
+			analysisManager->FillNtupleIColumn(2, it->second->GetVolumeIdY());
+			analysisManager->FillNtupleDColumn(3, it->second->GetEdep());
+			analysisManager->FillNtupleDColumn(4, it->second->GetTrackLength());
+			analysisManager->AddNtupleRow();
+		}
 	}
 
 	//print per event (modulo n)
-
 	G4int printModulo = G4RunManager::GetRunManager()->GetPrintProgress();
 	if ((printModulo > 0) && (eventID % printModulo == 0)) {
 		G4cout << "---- End of event: " << eventID << " ----" << G4endl;
