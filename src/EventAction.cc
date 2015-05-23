@@ -12,8 +12,9 @@
 
 #include "G4VUserPrimaryGeneratorAction.hh"
 
+
 EventAction::EventAction() :
-		G4UserEventAction(), fSensorEdepHCID(-1), fSensorTrackLengthHCID(-1), fSensorTrackAngleInHCID(-1), fSensorTrackAngleOutHCID(-1), fTriggerHCID(-1), fShieldInHCID(-1), fShieldOutHCID(-1)
+		G4UserEventAction(), fSensorEdepHCID(-1), fSensorTrackLengthHCID(-1), fSensorTrackAngleInHCID(-1), fSensorTrackAngleOutHCID(-1), fTriggerHCID(-1), fShieldInHCID(-1), fShieldOutHCID(-1), fPixelDetectorHCID(-1)
 {
 }
 
@@ -27,8 +28,21 @@ G4THitsMap<G4double>* EventAction::GetHitsCollection(G4int hcID, const G4Event* 
 
 	if (!hitsCollection) {
 		G4ExceptionDescription msg;
-		msg << "Cannot access hitsCollection ID " << hcID;
+		msg << "Cannot access hits Collection ID " << hcID;
 		G4Exception("EventAction::GetHitsCollection()", "MyCode0003", FatalException, msg);
+	}
+
+	return hitsCollection;
+}
+
+SiHitsMap* EventAction::GetPixelHitsMap(G4int hcID, const G4Event* event) const
+{
+	SiHitsMap* hitsCollection = static_cast<SiHitsMap*>(event->GetHCofThisEvent()->GetHC(hcID));
+
+	if (!hitsCollection) {
+		G4ExceptionDescription msg;
+		msg << "Cannot access pixel hits Collection ID " << hcID;
+		G4Exception("B4cEventAction::GetHitsCollection()", "MyCode0003", FatalException, msg);
 	}
 
 	return hitsCollection;
@@ -64,6 +78,7 @@ void EventAction::EndOfEventAction(const G4Event* event)
 		fTriggerHCID = G4SDManager::GetSDMpointer()->GetCollectionID("Trigger/TriggerMechanism");
 		fShieldInHCID = G4SDManager::GetSDMpointer()->GetCollectionID("SourceShield/MeasureEnergyIn");
 		fShieldOutHCID = G4SDManager::GetSDMpointer()->GetCollectionID("SourceShield/MeasureEnergyOut");
+		fPixelDetectorHCID = G4SDManager::GetSDMpointer()->GetCollectionID("PixelDetektor/PixelHitCollection");
 	}
 
 	// get analysis manager
@@ -72,67 +87,83 @@ void EventAction::EndOfEventAction(const G4Event* event)
 	G4double edep = 0.;
 	G4double trackLength = 0.;
 
-	if (fSensorEdepHCID != -1){
+	if (fSensorEdepHCID != -1) {
 		G4THitsMap<G4double>* hcEloss = GetHitsCollection(fSensorEdepHCID, event);
 		edep = GetSum(hcEloss);
 		analysisManager->FillH1(7, edep);
+		G4cout<<"edep "<<edep<<G4endl;
 	}
 
-	if (fSensorTrackLengthHCID != -1){
+	if (fPixelDetectorHCID != -1) {
+		SiHitsMap* pixelhitmap = GetPixelHitsMap(fPixelDetectorHCID, event);
+		for (std::map<G4int, SiHit*>::iterator it = pixelhitmap->GetMap()->begin(); it != pixelhitmap->GetMap()->end(); ++it)
+			G4cout<<it->first<<"\t"<<it->second->GetEdep()<<"\t"<<it->second->GetVolumeIdentifier()<<G4endl;
+
+//		SiHit* pixelHit = (*hcpixel)[hcpixel->entries() - 1];
+//		for (G4int i = 0; i < hcpixel->entries(); ++i)
+//			G4cout<<i<<"\t"<<((*hcpixel)[i])->GetEdep()<<G4endl;
+	}
+
+	if (fSensorTrackLengthHCID != -1) {
 		G4THitsMap<G4double>* hcTLength = GetHitsCollection(fSensorTrackLengthHCID, event);
 		trackLength = GetSum(hcTLength);
 		analysisManager->FillH1(8, trackLength);
 	}
 
-	if (trackLength > 0. && fSensorEdepHCID != -1 && fSensorTrackLengthHCID != -1){
+	if (trackLength > 0. && fSensorEdepHCID != -1 && fSensorTrackLengthHCID != -1) {
 		analysisManager->FillH1(12, edep / trackLength);
 	}
 
-	if (fSensorTrackAngleInHCID != -1){
+	if (fSensorTrackAngleInHCID != -1) {
 		G4THitsMap<G4double>* hcInAngle = GetHitsCollection(fSensorTrackAngleInHCID, event);
 		for (std::map<G4int, G4double*>::iterator it = hcInAngle->GetMap()->begin(); it != hcInAngle->GetMap()->end(); ++it)
 			analysisManager->FillH1(9, *(it->second));
 	}
 
-	if (fSensorTrackAngleOutHCID != -1){
+	if (fSensorTrackAngleOutHCID != -1) {
 		G4THitsMap<G4double>* hcOutAngle = GetHitsCollection(fSensorTrackAngleOutHCID, event);
-		for (std::map<G4int, G4double*>::iterator it = hcOutAngle->GetMap()->begin(); it != hcOutAngle->GetMap()->end(); ++it){
+		for (std::map<G4int, G4double*>::iterator it = hcOutAngle->GetMap()->begin(); it != hcOutAngle->GetMap()->end(); ++it) {
 			G4double theta = *(it->second);
-			G4double dteta  = analysisManager->GetH1Width(4);
-			G4double unit   = analysisManager->GetH1Unit(4);
-			G4double weight = (unit*unit)/(CLHEP::twopi*std::sin(theta)*dteta);
-			analysisManager->FillH1(10,theta,weight);
+			G4double dteta = analysisManager->GetH1Width(4);
+			G4double unit = analysisManager->GetH1Unit(4);
+			G4double weight = (unit * unit) / (CLHEP::twopi * std::sin(theta) * dteta);
+			analysisManager->FillH1(10, theta, weight);
 		}
 	}
 
-	if (fTriggerHCID != -1){
+	if (fTriggerHCID != -1) {
 		G4THitsMap<G4double>* hcTrigger = GetHitsCollection(fTriggerHCID, event);
 		if (hcTrigger->GetSize() > 0)  // there is at least one hit in the trigger volume
 			analysisManager->FillH1(11, edep);
 	}
 
-	if (fShieldInHCID != -1){
+	if (fShieldInHCID != -1) {
 		G4THitsMap<G4double>* hcInEnergy = GetHitsCollection(fShieldInHCID, event);
 		for (std::map<G4int, G4double*>::iterator it = hcInEnergy->GetMap()->begin(); it != hcInEnergy->GetMap()->end(); ++it)
 			analysisManager->FillH1(5, *(it->second));
 	}
 
-	if (fShieldOutHCID != -1){
+	if (fShieldOutHCID != -1) {
 		G4THitsMap<G4double>* hcOutEnergy = GetHitsCollection(fShieldOutHCID, event);
 		for (std::map<G4int, G4double*>::iterator it = hcOutEnergy->GetMap()->begin(); it != hcOutEnergy->GetMap()->end(); ++it)
 			analysisManager->FillH1(6, *(it->second));
 	}
 
+	G4int eventID = event->GetEventID();
+
 // fill ntuple
-//	analysisManager->FillNtupleDColumn(0, edep);
-//	analysisManager->FillNtupleDColumn(1, trackLength);
-//	analysisManager->AddNtupleRow();
+	if (edep != 0 || trackLength != 0){
+		analysisManager->FillNtupleIColumn(0,  eventID);
+		analysisManager->FillNtupleDColumn(1, edep);
+		analysisManager->FillNtupleDColumn(2, trackLength);
+		analysisManager->AddNtupleRow();
+	}
 
 	//print per event (modulo n)
-	G4int eventID = event->GetEventID();
+
 	G4int printModulo = G4RunManager::GetRunManager()->GetPrintProgress();
 	if ((printModulo > 0) && (eventID % printModulo == 0)) {
-		G4cout << "---- End of event: " << eventID << " ----"<<G4endl;
+		G4cout << "---- End of event: " << eventID << " ----" << G4endl;
 		PrintEventStatistics(edep, trackLength);
 	}
 
@@ -148,6 +179,5 @@ void EventAction::EndOfEventAction(const G4Event* event)
 //		G4cout << "------- Track "<<i<<" particle name " << trajectory->GetParticleName() << G4endl;
 //	}
 
-
-}
+			}
 

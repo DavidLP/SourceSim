@@ -1,0 +1,46 @@
+# definition of histograms (id, n_bins, min, max, unit)
+/analysis/h1/set 0 500 0 5 MeV		#Primary Energy Distribution
+/analysis/h1/set 1 500 -10 10 mm	#Primary x Distribution
+/analysis/h1/set 2 500 -10 10 mm	#Primary y Distribution
+/analysis/h1/set 3 200 0 3 MeV		#Secondary electrons energy distribution (e.g. ion decay)
+/analysis/h1/set 4 200 0 200 keV	#Secondary photons energy distribution
+/analysis/h1/set 5 100 0 5 MeV		#Shield particle energy distribution (before)
+/analysis/h1/set 6 100 0 5 MeV		#Shield particle energy distribution (after)
+/analysis/h1/set 7 100 0 200 keV	#Sensor energy deposit
+/analysis/h1/set 8 100 0 500 um		#Sensor track length
+/analysis/h1/set 9 100 0 90 deg		#Sensor track In angle
+/analysis/h1/set 10 100 0 90 deg	#Sensor track Out angle
+/analysis/h1/set 11 100 0 200 keV	#Sensor energy deposit (triggered)
+/analysis/h1/set 12 100 0 1 keV/um	#Sensor dE/dx
+
+/run/initialize
+
+# Create radioactive source
+# Create from ion decay (slow)
+#/gps/particle ion 
+#/gps/ion 38 90 0 0. # SR-90
+#/gps/energy 0. keV  # primary ion at rest
+
+# create from energy distribution hist (fast)
+/gps/ene/type Arb
+/gps/hist/file Sr_90_1mmShield_energy.dat
+/gps/hist/inter Lin
+/gps/ang/type iso
+/gps/ang/mintheta 135 deg
+/gps/ang/maxtheta 180 deg
+
+# position
+/gps/pos/type Volume
+/gps/pos/shape Cylinder
+/gps/pos/radius 10 mm
+/gps/pos/halfz 0.65 mm
+/gps/pos/centre 0. 0. -2 cm
+
+# setup
+/setup/collimator/enable 0
+/setup/shield/enable 0
+/setup/trigger/enable 1
+/setup/sourceshield/enable 0
+
+/run/beamon 10
+

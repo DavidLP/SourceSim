@@ -3,13 +3,14 @@
 
 #include "G4VUserDetectorConstruction.hh"
 #include "globals.hh"
-#include "G4MultiFunctionalDetector.hh"
 #include "G4Box.hh"
 #include "G4Tubs.hh"
 
+class G4Material;
 class G4VPhysicalVolume;
 class G4GlobalMagFieldMessenger;
 class DetectorMessenger;
+class G4MultiFunctionalDetector;
 
 class DetectorConstruction: public G4VUserDetectorConstruction {
 	public:

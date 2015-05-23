@@ -3,7 +3,9 @@
 // based on the GEANT4 framework
 
 #include "DetectorConstruction.hh"
+#include "PixelROWorld.hh"
 #include "ActionInitialization.hh"
+#include "G4ParallelWorldPhysics.hh"
 
 #ifdef G4MULTITHREADED
 #include "G4MTRunManager.hh"
@@ -78,33 +80,42 @@ int main(int argc,char** argv)
   G4RunManager * runManager = new G4RunManager;
 #endif
 
-  // Get the pointer to the User Interface manager
-  G4UImanager* UImanager = G4UImanager::GetUIpointer();
+	// Get the pointer to the User Interface manager
+	G4UImanager* UImanager = G4UImanager::GetUIpointer();
 
-  // Set initialization classes
-  runManager->SetUserInitialization(new DetectorConstruction());
-  runManager->SetUserInitialization(new PhysicsList()); //or: new LBE / new FTFP_BERT / new QGSP_BERT
-  runManager->SetUserInitialization(new ActionInitialization());
+	// Set initialization classes
+	// Set material and parallel readout world
+	G4String parallelWorldName = "PixelReadoutWorld";
+	G4VUserDetectorConstruction* detector = new DetectorConstruction();
+	detector->RegisterParallelWorld(new PixelROWorld(parallelWorldName));
+	runManager->SetUserInitialization(detector);
+	// Set physics list for both worlds
+	PhysicsList* physicsList = new PhysicsList();
+    physicsList->RegisterPhysics(new G4ParallelWorldPhysics(parallelWorldName));
+    runManager->SetUserInitialization(physicsList); //or: new LBE / new FTFP_BERT / new QGSP_BERT
+    // Set user actions (run action, event action, ...)
+	runManager->SetUserInitialization(new ActionInitialization());
 
-  G4VisManager* visManager = new G4VisExecutive;
-  visManager->Initialize();
+	G4VisManager* visManager = new G4VisExecutive;
+	visManager->Initialize();
 
-  if ( macro.size() ) {  // macro mode, just execute macro without visuals and init script
-    G4String command = "/control/execute ";
-    UImanager->ApplyCommand(command+macro);
-  }
-  else  {  // std. mode initialize viewer
-    G4UIExecutive* ui = new G4UIExecutive(argc, argv, session);
-    UImanager->ApplyCommand("/control/execute init.mac");  // run init script
-    UImanager->ApplyCommand("/control/execute vis.mac");  // run vis script
-    if (ui->IsGUI())
-    	UImanager->ApplyCommand("/control/execute gui.mac");  // run gui setup script
-    ui->SessionStart();
-    delete ui;
-  }
+	if ( macro.size() ) {  // macro mode, just execute macro without visuals and init script
+		G4String command = "/control/execute ";
+		UImanager->ApplyCommand(command+macro);
+	}
+	else  {  // std. mode initialize viewer
+		G4UIExecutive* ui = new G4UIExecutive(argc, argv, session);
+		UImanager->ApplyCommand("/control/execute init.mac");  // run init script
+		// BUG: the following can only be called from interface, was working in older GEANT versions...
+		//    UImanager->ApplyCommand("/control/execute vis.mac");  // run vis script
+		//    if (ui->IsGUI())
+		//    	UImanager->ApplyCommand("/control/execute gui.mac");  // run gui setup script
+		ui->SessionStart();
+		delete ui;
+	}
 
-  delete visManager;
-  delete runManager; // user actions, physics_list and detector_description are owned and deleted by the run manager
+	delete visManager;
+	delete runManager; // user actions, physics_list and detector_description are owned and deleted by the run manager
 
-  return 0;
+	return 0;
 }

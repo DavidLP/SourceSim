@@ -3,9 +3,10 @@
 
 #include "G4UserRunAction.hh"
 #include "globals.hh"
-#include "HistoManager.hh"
 
+#include "g4root.hh"
 class G4Run;
+class HistoManager;
 
 class RunAction: public G4UserRunAction {
 public:

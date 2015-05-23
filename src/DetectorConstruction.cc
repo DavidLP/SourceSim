@@ -29,13 +29,15 @@
 #include "G4SolidStore.hh"
 
 #include <cmath>
+
+#include "../depreciate/PixelROGeometry.hh"
+#include "PixelDetectorSD.hh"
 #include "MeasureTrackAngle.hh"
 #include "MeasureEnergy.hh"
 #include "Trigger.hh"
 
 #include "DetectorMessenger.hh"
-#include "PixelROGeometry.hh"
-#include "TestSD.hh"
+//#include "TestSD.hh"
 
 G4ThreadLocal
 G4GlobalMagFieldMessenger* DetectorConstruction::fMagFieldMessenger = 0;
@@ -95,11 +97,13 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 			0,//copy number
 			fCheckOverlaps);//overlaps checking
 
+	fLogicSensor->SetVisAttributes(new G4VisAttributes(G4Colour(0.5, 0.5, 0.5, 3./4.)));
+
 //	G4double pitchX = 50 * um;
 //	G4double pitchY = 250 * um;
 //
-//	G4int Ncols = 1;
-//	G4int Nrows = 1;
+//	G4int Ncols = 5;
+//	G4int Nrows = 25;
 //
 //	fSolidSensor = new G4Box("Sensor", pitchX / 2., pitchY / 2., 200 * um / 2.);
 //	fLogicSensor = new G4LogicalVolume(fSolidSensor, fSensorMaterial, "Sensor");
@@ -119,6 +123,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 //		}
 //		G4cout<<copyNr<<G4endl;
 //	}
+
 //	fPhysSensor = new G4PVPlacement(0,//no rotation
 //					G4ThreeVector(1 * cm, -1 * cm, 0),//std. position
 //					fLogicSensor,//its logical volume
@@ -143,6 +148,14 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 //					false,//no boolean operation
 //					3,//copy number
 //					fCheckOverlaps);//overlaps checking
+//	fPhysSensor = new G4PVPlacement(0,//no rotation
+//						G4ThreeVector(-1 * cm, -1 * cm, 0),//std. position
+//						fLogicSensor,//its logical volume
+//						"Sensor",//its name
+//						fLogicWorld,//its mother volume
+//						false,//no boolean operation
+//						3,//copy number
+//						fCheckOverlaps);//overlaps checking
 
 	//	Source shielding
 	fSolidSourceShield = new G4Box("SourceShield", 3. * cm / 2., 3. * cm / 2., 1. * mm / 2.);
@@ -236,12 +249,14 @@ void DetectorConstruction::ConstructSDandField()
 	G4SDManager::GetSDMpointer()->SetVerboseLevel(1);
 
 	G4MultiFunctionalDetector* siliconDetector = new G4MultiFunctionalDetector("Detector");
+	DefineSensorScorers(siliconDetector);
 	G4SDManager::GetSDMpointer()->AddNewDetector(siliconDetector);
+	fLogicSensor->SetSensitiveDetector(siliconDetector);
+
+
 //	PixelROGeometry* pixelReadOut = new PixelROGeometry("PixelROGeometry");
 //	pixelReadOut->BuildROGeometry();
 //	siliconDetector->SetROgeometry(pixelReadOut);
-	DefineSensorScorers(siliconDetector);
-	fLogicSensor->SetSensitiveDetector(siliconDetector);
 
 //	TestSD* testSD = new TestSD("TestDetector");
 //	G4SDManager::GetSDMpointer()->AddNewDetector(testSD);
@@ -257,7 +272,8 @@ void DetectorConstruction::ConstructSDandField()
 
 	G4MultiFunctionalDetector* sourceshielding = new G4MultiFunctionalDetector("SourceShield");
 	DefineShieldingScorers(sourceshielding);
-	SetSensitiveDetector("SourceShield", sourceshielding);
+	G4SDManager::GetSDMpointer()->AddNewDetector(sourceshielding);
+	fLogicSourceShield->SetSensitiveDetector(sourceshielding);
 }
 
 G4double DetectorConstruction::GetSensorThickness()
