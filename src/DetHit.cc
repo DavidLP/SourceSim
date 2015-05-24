@@ -1,4 +1,4 @@
-#include "SiHit.hh"
+#include "DetHit.hh"
 #include "G4UnitsTable.hh"
 #include "G4VVisManager.hh"
 #include "G4Circle.hh"
@@ -8,18 +8,18 @@
 
 #include <iomanip>
 
-G4ThreadLocal G4Allocator<SiHit>* SiHitAllocator = 0;
+G4ThreadLocal G4Allocator<DetHit>* DetHitAllocator = 0;
 
-SiHit::SiHit() :
+DetHit::DetHit() :
 		G4VHit(), fEdep(0.), fTrackLength(0.), fVolumeIdX(-1), fVolumeIdY(-1), fPosition(G4ThreeVector())
 {
 }
 
-SiHit::~SiHit()
+DetHit::~DetHit()
 {
 }
 
-SiHit::SiHit(const SiHit& right) :
+DetHit::DetHit(const DetHit& right) :
 		G4VHit()
 {
 	fEdep = right.fEdep;
@@ -29,7 +29,7 @@ SiHit::SiHit(const SiHit& right) :
 	fPosition = right.fPosition;
 }
 
-const SiHit& SiHit::operator=(const SiHit& right)
+const DetHit& DetHit::operator=(const DetHit& right)
 {
 	fEdep = right.fEdep;
 	fTrackLength = right.fTrackLength;
@@ -40,7 +40,7 @@ const SiHit& SiHit::operator=(const SiHit& right)
 	return *this;
 }
 
-const SiHit& SiHit::operator+=(const SiHit& right)
+const DetHit& DetHit::operator+=(const DetHit& right)
 {
 	fEdep += right.fEdep;
 	fTrackLength += right.fTrackLength;
@@ -49,12 +49,12 @@ const SiHit& SiHit::operator+=(const SiHit& right)
 	return *this;
 }
 
-G4int SiHit::operator==(const SiHit& right) const
+G4int DetHit::operator==(const DetHit& right) const
 {
 	return (this == &right) ? 1 : 0;
 }
 
-void SiHit::Print()
+void DetHit::Print()
 {
 	G4cout << "Edep: " << std::setw(7) << G4BestUnit(fEdep, "Energy") << " track length: " << std::setw(7) << G4BestUnit(fTrackLength, "Length") << " volumne id x/y"<<fVolumeIdX<<"/"<<fVolumeIdY<< G4endl;
 }

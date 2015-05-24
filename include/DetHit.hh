@@ -1,5 +1,5 @@
-#ifndef SiHit_h
-#define SiHit_h 1
+#ifndef DetHit_h
+#define DetHit_h 1
 
 #include "G4VHit.hh"
 #include "G4THitsCollection.hh"
@@ -8,17 +8,17 @@
 #include "G4ThreeVector.hh"
 #include "tls.hh"
 
-class SiHit: public G4VHit
+class DetHit: public G4VHit
 {
 	public:
-		SiHit();
-		SiHit(const SiHit&);
-		virtual ~SiHit();
+		DetHit();
+		DetHit(const DetHit&);
+		virtual ~DetHit();
 
 		// operators
-		const SiHit& operator=(const SiHit&);
-		const SiHit& operator+=(const SiHit&);
-		G4int operator==(const SiHit&) const;
+		const DetHit& operator=(const DetHit&);
+		const DetHit& operator+=(const DetHit&);
+		G4int operator==(const DetHit&) const;
 
 		inline void* operator new(size_t);
 		inline void operator delete(void*);
@@ -49,68 +49,68 @@ class SiHit: public G4VHit
 		G4ThreeVector fPosition; ///the position with respect to the global world mean
 };
 
-typedef G4THitsMap<SiHit> SiHitsMap;
+typedef G4THitsMap<DetHit> DetHitsMap;
 
-extern G4ThreadLocal G4Allocator<SiHit>* SiHitAllocator;
+extern G4ThreadLocal G4Allocator<DetHit>* DetHitAllocator;
 
-inline void* SiHit::operator new(size_t)
+inline void* DetHit::operator new(size_t)
 {
-	if (!SiHitAllocator)
-		SiHitAllocator = new G4Allocator<SiHit>;
+	if (!DetHitAllocator)
+		DetHitAllocator = new G4Allocator<DetHit>;
 	void *hit;
-	hit = (void *) SiHitAllocator->MallocSingle();
+	hit = (void *) DetHitAllocator->MallocSingle();
 	return hit;
 }
 
-inline void SiHit::operator delete(void *hit)
+inline void DetHit::operator delete(void *hit)
 {
-	if (!SiHitAllocator)
-		SiHitAllocator = new G4Allocator<SiHit>;
-	SiHitAllocator->FreeSingle((SiHit*) hit);
+	if (!DetHitAllocator)
+		DetHitAllocator = new G4Allocator<DetHit>;
+	DetHitAllocator->FreeSingle((DetHit*) hit);
 }
 
-inline void SiHit::Add(G4double de, G4double dl)
+inline void DetHit::Add(G4double de, G4double dl)
 {
 	fEdep += de;
 	fTrackLength += dl;
 }
 
-inline G4double SiHit::GetEdep() const
+inline G4double DetHit::GetEdep() const
 {
 	return fEdep;
 }
 
-inline G4double SiHit::GetTrackLength() const
+inline G4double DetHit::GetTrackLength() const
 {
 	return fTrackLength;
 }
 
-inline void SiHit::SetVolumeIdX(const G4int& volumeIdX)
+inline void DetHit::SetVolumeIdX(const G4int& volumeIdX)
 {
 	fVolumeIdX = volumeIdX;
 }
 
-inline void SiHit::SetVolumeIdY(const G4int& volumeIdY)
+inline void DetHit::SetVolumeIdY(const G4int& volumeIdY)
 {
 	fVolumeIdY = volumeIdY;
 }
 
-inline G4int SiHit::GetVolumeIdX() const
+inline G4int DetHit::GetVolumeIdX() const
 {
 	return fVolumeIdX;
 }
 
-inline G4int SiHit::GetVolumeIdY() const
+inline G4int DetHit::GetVolumeIdY() const
 {
 	return fVolumeIdY;
 }
 
-inline void SiHit::SetPosition(const G4ThreeVector& position)
+inline void DetHit::SetPosition(const G4ThreeVector& position)
 {
 	fPosition = position;
 }
 
-inline G4ThreeVector SiHit::GetPosition() const
+inline G4ThreeVector DetHit::GetPosition() const
 {
 	return fPosition;
 }
