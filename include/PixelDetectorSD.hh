@@ -4,9 +4,8 @@
 #define PixelDetectorSD_h 1
 
 #include "G4VSensitiveDetector.hh"
-#include "SiHit.hh"
-
 #include <vector>
+#include "DetHit.hh"
 
 class G4Step;
 class G4HCofThisEvent;
@@ -23,7 +22,7 @@ class PixelDetectorSD: public G4VSensitiveDetector
 		virtual void EndOfEvent(G4HCofThisEvent* hitCollection);
 
 	private:
-		SiHitsMap* fHitsMap;
+		DetHitsMap* fHitsMap;
 };
 
 #endif

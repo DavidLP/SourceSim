@@ -28,16 +28,11 @@
 #include "G4LogicalVolumeStore.hh"
 #include "G4SolidStore.hh"
 
-#include <cmath>
-
-#include "../depreciate/PixelROGeometry.hh"
 #include "PixelDetectorSD.hh"
 #include "MeasureTrackAngle.hh"
 #include "MeasureEnergy.hh"
 #include "Trigger.hh"
-
 #include "DetectorMessenger.hh"
-//#include "TestSD.hh"
 
 G4ThreadLocal
 G4GlobalMagFieldMessenger* DetectorConstruction::fMagFieldMessenger = 0;

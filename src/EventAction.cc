@@ -35,9 +35,9 @@ G4THitsMap<G4double>* EventAction::GetHitsCollection(G4int hcID, const G4Event* 
 	return hitsCollection;
 }
 
-SiHitsMap* EventAction::GetPixelHitsMap(G4int hcID, const G4Event* event) const
+DetHitsMap* EventAction::GetPixelHitsMap(G4int hcID, const G4Event* event) const
 {
-	SiHitsMap* hitsCollection = static_cast<SiHitsMap*>(event->GetHCofThisEvent()->GetHC(hcID));
+	DetHitsMap* hitsCollection = static_cast<DetHitsMap*>(event->GetHCofThisEvent()->GetHC(hcID));
 
 	if (!hitsCollection) {
 		G4ExceptionDescription msg;
@@ -142,13 +142,13 @@ void EventAction::EndOfEventAction(const G4Event* event)
 	G4int eventID = event->GetEventID();
 
 	if (fPixelDetectorHCID != -1) {
-		SiHitsMap* pixelhitmap = GetPixelHitsMap(fPixelDetectorHCID, event);
-//		for (std::map<G4int, SiHit*>::iterator it = pixelhitmap->GetMap()->begin(); it != pixelhitmap->GetMap()->end(); ++it){
+		DetHitsMap* pixelhitmap = GetPixelHitsMap(fPixelDetectorHCID, event);
+//		for (std::map<G4int, DetHit*>::iterator it = pixelhitmap->GetMap()->begin(); it != pixelhitmap->GetMap()->end(); ++it){
 //			G4cout << it->first<<"   Total energy in sensor: " << std::setw(7) << G4BestUnit(it->second->GetEdep(), "Energy") << "   Total track length in sensor: " << G4BestUnit(it->second->GetTrackLength(), "Length") <<" volume id "<<it->second->GetVolumeIdentifier()<< G4endl;
 //		}
 		// fill ntuple
-		for (std::map<G4int, SiHit*>::iterator it = pixelhitmap->GetMap()->begin(); it != pixelhitmap->GetMap()->end(); ++it){
-			if (it->second->GetVolumeIdX() == -1)  // speed up
+		for (std::map<G4int, DetHit*>::iterator it = pixelhitmap->GetMap()->begin(); it != pixelhitmap->GetMap()->end(); ++it){
+			if (it->second->GetVolumeIdX() == -1)  // speed up, do not loop empty DetHits
 				break;
 			analysisManager->FillNtupleIColumn(0, eventID);
 			analysisManager->FillNtupleIColumn(1, it->second->GetVolumeIdX());

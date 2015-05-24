@@ -22,7 +22,7 @@ PixelDetectorSD::~PixelDetectorSD()
 void PixelDetectorSD::Initialize(G4HCofThisEvent* hitCollection)
 {
 	// Create hits collection
-	fHitsMap = new SiHitsMap(SensitiveDetectorName, collectionName[0]);
+	fHitsMap = new DetHitsMap(SensitiveDetectorName, collectionName[0]);
 
 	// Add this collection in hce
 	G4int hcID = G4SDManager::GetSDMpointer()->GetCollectionID(collectionName[0]);
@@ -31,7 +31,7 @@ void PixelDetectorSD::Initialize(G4HCofThisEvent* hitCollection)
 	// Create hits
 	// fNpixel for pixel + one more for total sums
 	for (G4int i = 0; i < maxHits; i++) {
-		SiHit* t = new SiHit();
+		DetHit* t = new DetHit();
 		fHitsMap->add(i, t);
 	}
 }
@@ -58,16 +58,16 @@ G4bool PixelDetectorSD::ProcessHits(G4Step* step, G4TouchableHistory* history)
 		G4Exception("PixelDetectorSD::ProcessHits()", "MyCode0004", FatalException, msg);
 	}
 
-	for (std::map<G4int, SiHit*>::iterator it = fHitsMap->GetMap()->begin(); it != fHitsMap->GetMap()->end(); ++it){
+	for (std::map<G4int, DetHit*>::iterator it = fHitsMap->GetMap()->begin(); it != fHitsMap->GetMap()->end(); ++it){
 //	Per pixel steps accumulation would correspond to some digitization, this should be independent thus no histograming here
 //		if (it->second->GetVolumeIdentifier() == iVolume){  // hits already exist, so add this step to it
 //			it->second->Add(edep, stepLength);
 //			break;
 //		}
 		if (it->second->GetVolumeIdX() == -1){
-			G4cout << G4endl;
-			G4cout << "VOLUMEID "<<touchable->GetReplicaNumber(0)<<"\t"<<touchable->GetReplicaNumber(1)<<G4endl;
-			G4cout << G4endl;
+//			G4cout << G4endl;
+//			G4cout << "VOLUMEID "<<touchable->GetReplicaNumber(0)<<"\t"<<touchable->GetReplicaNumber(1)<<G4endl;
+//			G4cout << G4endl;
 			it->second->SetVolumeIdX(touchable->GetReplicaNumber(0));
 			it->second->SetVolumeIdY(touchable->GetReplicaNumber(1));
 			it->second->Add(edep, stepLength);
