@@ -48,8 +48,7 @@ PhysicsList::PhysicsList():G4VModularPhysicsList(),
 
 	fPMessenger = new PhysicsListMessenger(this);
 
-	SetVerboseLevel(1);
-	init_std_physics();
+	SetVerboseLevel(0);
 }
 
 PhysicsList::~PhysicsList()
@@ -57,12 +56,12 @@ PhysicsList::~PhysicsList()
 	delete fPMessenger;
 }
 
-void PhysicsList::init_std_physics()
+void PhysicsList::InitStdPhysics()  // usual and sufficient physics selection, has to be called
 {
 	SelectDecayPhysics("decay");  // one has to be initialized, why?
 	SelectDecayPhysics("radioactivedecay");
-	SelectHadronPhysics("QGSP_BIC_HP");
 	SelectElectromagneticPhysics("emstandard_opt4");
+	SelectHadronPhysics("QGSP_BIC_HP");
 }
 
 void PhysicsList::SelectHadronPhysics(const G4String& name)

@@ -13,13 +13,13 @@ class PhysicsList: public G4VModularPhysicsList {
 		PhysicsList();
 		virtual ~PhysicsList();
 
-//		void SetCuts();
+		void InitStdPhysics();  // set std physics, has to be called
 
+		// select different physics lists
 		void SelectHadronPhysics(const G4String& name);
 		void SelectElectromagneticPhysics(const G4String& name);
 		void SelectDecayPhysics(const G4String& name);
 
-//		virtual void SetCuts();
 		void SetCutForGamma(G4double);
 		void SetCutForElectron(G4double);
 		void SetCutForPositron(G4double);
@@ -27,7 +27,7 @@ class PhysicsList: public G4VModularPhysicsList {
 		void SetDetectorCut(G4double val);
 
 	private:
-		void init_std_physics();
+
 
 		void AddExtraBuilders(G4bool flagHP);
 		void DeleteHadronPhysics();

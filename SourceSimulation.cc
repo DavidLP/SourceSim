@@ -24,6 +24,8 @@
 
 #include "Randomize.hh"
 
+#include "G4ParallelWorldScoringProcess.hh"
+
 #ifdef G4VIS_USE
 #include "G4VisExecutive.hh"
 #endif
@@ -84,15 +86,19 @@ int main(int argc,char** argv)
 	G4UImanager* UImanager = G4UImanager::GetUIpointer();
 
 	// Set initialization classes
+
 	// Set material and parallel readout world
 	G4String parallelWorldName = "PixelReadoutWorld";
 	G4VUserDetectorConstruction* detector = new DetectorConstruction();
 	detector->RegisterParallelWorld(new PixelROWorld(parallelWorldName));
 	runManager->SetUserInitialization(detector);
+
 	// Set physics list for both worlds
 	PhysicsList* physicsList = new PhysicsList();
-    physicsList->RegisterPhysics(new G4ParallelWorldPhysics(parallelWorldName));
-    runManager->SetUserInitialization(physicsList); //or: new LBE / new FTFP_BERT / new QGSP_BERT
+    physicsList->RegisterPhysics(new G4ParallelWorldPhysics(parallelWorldName));  // parallel world physic has to be called FIRDT
+    physicsList->InitStdPhysics();  // material world physics set here (AFTER parallel world physics, otherwise wrong results... BAD framework implementation ...)
+    runManager->SetUserInitialization(physicsList);
+
     // Set user actions (run action, event action, ...)
 	runManager->SetUserInitialization(new ActionInitialization());
 
