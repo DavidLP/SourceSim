@@ -59,15 +59,12 @@ G4bool PixelDetectorSD::ProcessHits(G4Step* step, G4TouchableHistory* history)
 	}
 
 	for (std::map<G4int, DetHit*>::iterator it = fHitsMap->GetMap()->begin(); it != fHitsMap->GetMap()->end(); ++it){
-//	Per pixel steps accumulation would correspond to some digitization, this should be independent thus no histograming here
+//	Per pixel steps accumulation would correspond to some digitization. Digitization should be independent thus no "per pixel histograming" here
 //		if (it->second->GetVolumeIdentifier() == iVolume){  // hits already exist, so add this step to it
 //			it->second->Add(edep, stepLength);
 //			break;
 //		}
 		if (it->second->GetVolumeIdX() == -1){
-//			G4cout << G4endl;
-//			G4cout << "VOLUMEID "<<touchable->GetReplicaNumber(0)<<"\t"<<touchable->GetReplicaNumber(1)<<G4endl;
-//			G4cout << G4endl;
 			it->second->SetVolumeIdX(touchable->GetReplicaNumber(0));
 			it->second->SetVolumeIdY(touchable->GetReplicaNumber(1));
 			it->second->Add(edep, stepLength);
