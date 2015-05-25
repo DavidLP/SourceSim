@@ -7,15 +7,18 @@
 #include "G4HCofThisEvent.hh"
 #include "G4UnitsTable.hh"
 
+#include "Digitizer.hh"
+#include "G4DigiManager.hh"
+
 #include "Randomize.hh"
 #include <iomanip>
 
 #include "G4VUserPrimaryGeneratorAction.hh"
 
-
-EventAction::EventAction() :
-		G4UserEventAction(), fSensorEdepHCID(-1), fSensorTrackLengthHCID(-1), fSensorTrackAngleInHCID(-1), fSensorTrackAngleOutHCID(-1), fTriggerHCID(-1), fShieldInHCID(-1), fShieldOutHCID(-1), fPixelDetectorHCID(-1)
+EventAction::EventAction()
+		: G4UserEventAction(), fSensorEdepHCID(-1), fSensorTrackLengthHCID(-1), fSensorTrackAngleInHCID(-1), fSensorTrackAngleOutHCID(-1), fTriggerHCID(-1), fShieldInHCID(-1), fShieldOutHCID(-1), fPixelDetectorHCID(-1)
 {
+	G4DigiManager::GetDMpointer()->AddNewModule(new Digitizer("PixelDigitizer"));
 }
 
 EventAction::~EventAction()
@@ -26,11 +29,8 @@ G4THitsMap<G4double>* EventAction::GetHitsCollection(G4int hcID, const G4Event* 
 {
 	G4THitsMap<G4double>* hitsCollection = static_cast<G4THitsMap<G4double>*>(event->GetHCofThisEvent()->GetHC(hcID));
 
-	if (!hitsCollection) {
-		G4ExceptionDescription msg;
-		msg << "Cannot access hits Collection ID " << hcID;
-		G4Exception("EventAction::GetHitsCollection()", "MyCode0003", FatalException, msg);
-	}
+	if (!hitsCollection)
+		G4Exception("EventAction::GetHitsCollection()", "Cannot access hits collection", FatalException, "");
 
 	return hitsCollection;
 }
@@ -39,11 +39,8 @@ DetHitsMap* EventAction::GetPixelHitsMap(G4int hcID, const G4Event* event) const
 {
 	DetHitsMap* hitsCollection = static_cast<DetHitsMap*>(event->GetHCofThisEvent()->GetHC(hcID));
 
-	if (!hitsCollection) {
-		G4ExceptionDescription msg;
-		msg << "Cannot access pixel hits Collection ID " << hcID;
-		G4Exception("B4cEventAction::GetHitsCollection()", "MyCode0003", FatalException, msg);
-	}
+	if (!hitsCollection)
+		G4Exception("EventAction::GetHitsCollection()", "Cannot access pixel hits Collection", FatalException, "");
 
 	return hitsCollection;
 }
@@ -69,7 +66,7 @@ void EventAction::BeginOfEventAction(const G4Event* /*event*/)
 
 void EventAction::EndOfEventAction(const G4Event* event)
 {
-	// Get hist collections IDs
+	// Get hit collections IDs
 	if (fSensorEdepHCID == -1) {
 		fSensorEdepHCID = G4SDManager::GetSDMpointer()->GetCollectionID("Detector/EnergyDeposit");
 		fSensorTrackLengthHCID = G4SDManager::GetSDMpointer()->GetCollectionID("Detector/TrackLength");
@@ -91,7 +88,6 @@ void EventAction::EndOfEventAction(const G4Event* event)
 		G4THitsMap<G4double>* hcEloss = GetHitsCollection(fSensorEdepHCID, event);
 		edep = GetSum(hcEloss);
 		analysisManager->FillH1(7, edep);
-		G4cout<<"edep "<<edep<<G4endl;
 	}
 
 	if (fSensorTrackLengthHCID != -1) {
@@ -143,11 +139,8 @@ void EventAction::EndOfEventAction(const G4Event* event)
 
 	if (fPixelDetectorHCID != -1) {
 		DetHitsMap* pixelhitmap = GetPixelHitsMap(fPixelDetectorHCID, event);
-//		for (std::map<G4int, DetHit*>::iterator it = pixelhitmap->GetMap()->begin(); it != pixelhitmap->GetMap()->end(); ++it){
-//			G4cout << it->first<<"   Total energy in sensor: " << std::setw(7) << G4BestUnit(it->second->GetEdep(), "Energy") << "   Total track length in sensor: " << G4BestUnit(it->second->GetTrackLength(), "Length") <<" volume id "<<it->second->GetVolumeIdentifier()<< G4endl;
-//		}
 		// fill ntuple
-		for (std::map<G4int, DetHit*>::iterator it = pixelhitmap->GetMap()->begin(); it != pixelhitmap->GetMap()->end(); ++it){
+		for (std::map<G4int, DetHit*>::iterator it = pixelhitmap->GetMap()->begin(); it != pixelhitmap->GetMap()->end(); ++it) {
 			if (it->second->GetVolumeIdX() == -1)  // speed up, do not loop empty DetHits
 				break;
 			analysisManager->FillNtupleIColumn(0, eventID);
@@ -159,7 +152,28 @@ void EventAction::EndOfEventAction(const G4Event* event)
 		}
 	}
 
-	//print per event (modulo n)
+	Digitizer* pixelDigitizer = (Digitizer*) G4DigiManager::GetDMpointer()->FindDigitizerModule("PixelDigitizer");
+	if (pixelDigitizer) {
+		pixelDigitizer->Digitize();
+		G4int fPixelDCID = G4DigiManager::GetDMpointer()->GetDigiCollectionID("PixelDigitizer/PixelDigitsCollection");
+		if (fPixelDCID != -1) { // FIXME: segfault
+			if (G4DigiManager::GetDMpointer()->GetDigiCollection(fPixelDCID) != 0){  //FIXME: is always 0
+				PixelDigitsCollection* digitsCollection = static_cast<PixelDigitsCollection*>(event->GetDCofThisEvent()->GetDC(fPixelDCID));
+				for (G4int iDigits = 0; iDigits < digitsCollection->entries(); ++iDigits) {
+					G4cout << iDigits << "\t" << (*digitsCollection)[iDigits]->GetColumn() << "\t" << (*digitsCollection)[iDigits]->GetRow() << "\t" << (*digitsCollection)[iDigits]->GetCharge() << G4endl;
+				}
+			}
+		}
+		else {
+			G4ExceptionDescription msg;
+			msg << "Cannot access pixel digits, Collection ID / Name " << fPixelDCID <<"Digitizer/PixelDigitsCollection";
+			G4Exception("EventAction::EndOfEventAction", "MyCode0003", FatalException, msg);
+
+		}
+	} else
+		G4Exception("EventAction::EndOfEventAction", "Cannot find digitization module.", JustWarning, "");
+
+//print per event (modulo n)
 	G4int printModulo = G4RunManager::GetRunManager()->GetPrintProgress();
 	if ((printModulo > 0) && (eventID % printModulo == 0)) {
 		G4cout << "---- End of event: " << eventID << " ----" << G4endl;
@@ -177,6 +191,5 @@ void EventAction::EndOfEventAction(const G4Event* event)
 //		G4cout << "------- Track "<<i<<" parent ID " << trajectory->GetParentID() << G4endl;
 //		G4cout << "------- Track "<<i<<" particle name " << trajectory->GetParticleName() << G4endl;
 //	}
-
 			}
 
