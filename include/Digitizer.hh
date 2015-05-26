@@ -20,7 +20,7 @@ class Digitizer: public G4VDigitizerModule {
 
 	private:
 
-		G4double fEnergyPerQ;
+		G4double fEnergyPerCharge;
 		G4int fThreshold;
 		G4int fNoise;
 
