@@ -6,7 +6,6 @@
 #include "G4UnitsTable.hh"
 #include "G4SystemOfUnits.hh"
 
-
 RunAction::RunAction() :
 		G4UserRunAction(), fHistoManager(0)
 {
@@ -16,15 +15,30 @@ RunAction::RunAction() :
 	// Book predefined histograms
 	fHistoManager = new HistoManager();
 
-	//	 Creating ntuple
+	//	 Creating detector hit ntuple
 	G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
-	analysisManager->CreateNtuple("Silicon Hits", "A step within the detector");
-	analysisManager->CreateNtupleIColumn("Event");
-	analysisManager->CreateNtupleIColumn("VolumeIdX");
-	analysisManager->CreateNtupleIColumn("VolumeIdY");
-	analysisManager->CreateNtupleDColumn("EnergyDeposit");
-	analysisManager->CreateNtupleDColumn("TrackLength");
-	analysisManager->FinishNtuple();
+
+	// Create directories
+	analysisManager->SetHistoDirectoryName("Histograms");
+	analysisManager->SetNtupleDirectoryName("EventData");
+
+	analysisManager->SetFirstNtupleId(0);
+
+	analysisManager->CreateNtuple("Detector Hits", "A step within the detector volume");  // ID 0
+	analysisManager->CreateNtupleIColumn(0, "Event");
+	analysisManager->CreateNtupleIColumn(0, "VolumeIdX");
+	analysisManager->CreateNtupleIColumn(0, "VolumeIdY");
+	analysisManager->CreateNtupleDColumn(0, "EnergyDeposit");
+	analysisManager->CreateNtupleDColumn(0, "TrackLength");
+	analysisManager->FinishNtuple(0);
+
+//	 Creating pixel digi hit ntuple
+	analysisManager->CreateNtuple("Pixel Digits", "A pixel hit");  // ID 1
+	analysisManager->CreateNtupleIColumn(1, "event");  // index
+	analysisManager->CreateNtupleIColumn(1, "column");  // index
+	analysisManager->CreateNtupleIColumn(1, "row");  // index
+	analysisManager->CreateNtupleIColumn(1, "charge");  // [e]
+	analysisManager->FinishNtuple(1);
 }
 
 RunAction::~RunAction()
