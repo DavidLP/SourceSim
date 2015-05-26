@@ -10,17 +10,15 @@
 #include "G4SystemOfUnits.hh"
 #include "G4UnitsTable.hh"
 
-#import <cmath>
-
 #include "PixelDetectorSD.hh"
 #include "PixelDetectorMessenger.hh"
 
-// Std. pixel sensor geometry
+// Std. pixel sensor geometry, IBL planar sensor
 const G4double X = 2 * cm;
 const G4double Y = 2 * cm;
 const G4double pitchX = 50 * um;
 const G4double pitchY = 250 * um;
-const G4double thickness = 230 * um;
+const G4double thickness = 200 * um;
 
 PixelROWorld::PixelROWorld(G4String& parallelWorldName)
 		: G4VUserParallelWorld(parallelWorldName),
@@ -72,7 +70,7 @@ void PixelROWorld::SetColumns(const G4int& Ncolumns, const G4double& size, const
 	fPhysPixelSensorColumn->SetMotherLogical(0);
 	fPhysPixelSensorColumn = new G4PVDivision("Divided along X-axis", fLogicPixelSensorColumn, fLogicPixelSensor, kXAxis, Ncolumns, offset);  // looks bad, but geant4 manual: "The registries will automatically delete those objects when requested; users should not deleted geometry objects manually"
 	G4RunManager::GetRunManager()->GeometryHasBeenModified();
-	G4cout << "Sensor columns have been set: " << Ncolumns << " columns, " << G4BestUnit(size, "Length") << " each and " << G4BestUnit(size, "Length") << " offset" << G4endl;
+//	G4cout << "Sensor columns have been set: " << Ncolumns << " columns, " << G4BestUnit(size, "Length") << " each and " << G4BestUnit(size, "Length") << " offset" << G4endl;
 }
 
 void PixelROWorld::SetRows(const G4int& Nrows, const G4double& size, const G4double& offset)
