@@ -45,7 +45,7 @@ class PixelDigi: public G4VDigi {
 			fRow = row;
 		}
 
-		inline void SetCharge(G4double Charge)
+		inline void SetCharge(const G4double& Charge)
 		{
 			fCharge = Charge;
 		}
