@@ -79,10 +79,8 @@ void Digitizer::Digitize()
 	// Apply noise and threshold to all actual pixel digis
 	for (G4int iDigi = 0; iDigi < actualPixelDigitsCollection->entries(); ++iDigi) {
 		(*actualPixelDigitsCollection)[iDigi]->SetCharge(G4RandGauss::shoot((*actualPixelDigitsCollection)[iDigi]->GetCharge(), fNoise));  // add gaussian noise to the charge
-		if ((*actualPixelDigitsCollection)[iDigi]->GetCharge() >= fThreshold){
-			std::cout<<"(*actualPixelDigitsCollection)[iDigi]->GetCharge() "<<(*actualPixelDigitsCollection)[iDigi]->GetCharge()<<G4endl;
+		if ((*actualPixelDigitsCollection)[iDigi]->GetCharge() >= fThreshold)
 			fPixelDigitsCollection->insert(new PixelDigi(*(*actualPixelDigitsCollection)[iDigi]));
-		}
 	}
 
 	StoreDigiCollection(fPixelDigitsCollection);
