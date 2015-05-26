@@ -34,6 +34,13 @@
 #include "Trigger.hh"
 #include "DetectorMessenger.hh"
 
+
+// Std. sensor geometry, IBL planar sensor
+const G4double X = 2 * cm;
+const G4double Y = 2 * cm;
+const G4double thickness = 200 * um;
+
+
 G4ThreadLocal
 G4GlobalMagFieldMessenger* DetectorConstruction::fMagFieldMessenger = 0;
 
@@ -81,7 +88,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 	fLogicWorld->SetVisAttributes(worldVisAtt);
 
 	// Sensor
-	fSolidSensor = new G4Box("Sensor", 2 * cm / 2., 2 * cm / 2., 200 * um / 2.);
+	fSolidSensor = new G4Box("Sensor", X / 2., Y / 2., thickness / 2.);
 	fLogicSensor = new G4LogicalVolume(fSolidSensor, fSensorMaterial, "Sensor");
 	fPhysSensor = new G4PVPlacement(0,//no rotation
 			G4ThreeVector(0, 0, 0),//std. position
