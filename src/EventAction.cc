@@ -160,7 +160,6 @@ void EventAction::EndOfEventAction(const G4Event* event)
 			if (G4DigiManager::GetDMpointer()->GetDigiCollection(fPixelDCID) != 0) {
 				PixelDigitsCollection* digitsCollection = static_cast<PixelDigitsCollection*>(event->GetDCofThisEvent()->GetDC(fPixelDCID));
 				for (G4int iDigits = 0; iDigits < digitsCollection->entries(); ++iDigits) {
-					G4cout << iDigits << "\t" << (*digitsCollection)[iDigits]->GetColumn() << "\t" << (*digitsCollection)[iDigits]->GetRow() << "\t" << (*digitsCollection)[iDigits]->GetCharge() << G4endl;
 					analysisManager->FillNtupleIColumn(1, 0, eventID);
 					analysisManager->FillNtupleIColumn(1, 1, (*digitsCollection)[iDigits]->GetColumn());
 					analysisManager->FillNtupleIColumn(1, 2, (*digitsCollection)[iDigits]->GetRow());
