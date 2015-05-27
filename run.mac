@@ -27,7 +27,7 @@
 /gps/hist/inter Lin
 /gps/ang/type iso
 /gps/ang/mintheta 0 deg
-/gps/ang/maxtheta 25 deg
+/gps/ang/maxtheta 13 deg
 /gps/ang/rot1 -1 0 0  # direction defined into negative z (wtf)
 
 #/gps/particle e- 
@@ -40,7 +40,7 @@
 /gps/pos/shape Cylinder
 /gps/pos/radius 7 mm
 /gps/pos/halfz 0.65 mm
-/gps/pos/centre 0. 0. -2 cm
+/gps/pos/centre 0. 0. -1.8 cm
 
 # setup
 /setup/collimator/enable 0
@@ -48,5 +48,5 @@
 /setup/trigger/enable 1
 /setup/sourceshield/enable 0
 
-/run/beamOn 300000
+/run/beamOn 150000
 
