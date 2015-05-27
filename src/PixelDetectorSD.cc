@@ -65,8 +65,8 @@ G4bool PixelDetectorSD::ProcessHits(G4Step* step, G4TouchableHistory* history)
 //			break;
 //		}
 		if (it->second->GetVolumeIdX() == -1){
-			it->second->SetVolumeIdX(touchable->GetReplicaNumber(0));
-			it->second->SetVolumeIdY(touchable->GetReplicaNumber(1));
+			it->second->SetVolumeIdX(touchable->GetReplicaNumber(1));  // column
+			it->second->SetVolumeIdY(touchable->GetReplicaNumber(0));  // row
 			it->second->Add(edep, stepLength);
 			it->second->SetPosition(step->GetPreStepPoint()->GetPosition());
 			break;

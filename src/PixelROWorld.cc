@@ -13,27 +13,19 @@
 #include "PixelDetectorSD.hh"
 #include "PixelDetectorMessenger.hh"
 
-// Std. pixel sensor geometry, IBL planar sensor
-const G4double X = 2 * cm;
-const G4double Y = 2 * cm;
-const G4double pitchX = 50 * um;
-const G4double pitchY = 250 * um;
-const G4double thickness = 200 * um;
+// Std. pixel sensor geometry, IBL planar single chip sensor
+const G4int nColumns = 80;
+const G4double X = 20.45 * mm;  // total sensor tile x dimension (column)
+const G4double pitchX = 250 * um;  // pixel size x width (column)
+const G4double offsetX = (X - nColumns * pitchX) / 2;  // pixel offset in sensor tile in x (column)
+const G4int nRows = 336;
+const G4double Y = 18.59 * mm;  // total sensor tile y dimension (row)
+const G4double pitchY = 50 * um;  // pixel size y width (row)
+const G4double offsetY = (Y - nRows * pitchY) / 2;  // pixel offset in sensor tile in y (row)
+const G4double thickness = 230 * um;  // total sensor tile width
 
-PixelROWorld::PixelROWorld(G4String& parallelWorldName)
-		: G4VUserParallelWorld(parallelWorldName),
-		  fSolidPixelSensor(0),
-		  fLogicPixelSensor(0),
-		  fPhysPixelSensor(0),
-		  fSolidPixelSensorColumn(0),
-		  fLogicPixelSensorColumn(0),
-		  fPhysPixelSensorColumn(0),
-		  fSolidPixelSensorPixel(0),
-		  fLogicPixelSensorPixel(0),
-		  fPhysPixelSensorPixel(0),
-		  fColumnSize(pitchX),
-		  fRowSize(pitchY),
-		  fPixelDetectorMessenger(0)
+PixelROWorld::PixelROWorld(G4String& parallelWorldName) :
+		G4VUserParallelWorld(parallelWorldName), fSolidPixelSensor(0), fLogicPixelSensor(0), fPhysPixelSensor(0), fSolidPixelSensorColumn(0), fLogicPixelSensorColumn(0), fPhysPixelSensorColumn(0), fSolidPixelSensorPixel(0), fLogicPixelSensorPixel(0), fPhysPixelSensorPixel(0), fColumnSize(pitchX), fRowSize(pitchY), fPixelDetectorMessenger(0)
 {
 	fPixelDetectorMessenger = new PixelDetectorMessenger(this);
 }
@@ -45,6 +37,8 @@ PixelROWorld::~PixelROWorld()
 
 void PixelROWorld::Construct()
 {
+	G4cout << "PixelROWorld::Construct(): Constructing pixel read out world " << G4endl;
+
 	G4VPhysicalVolume* fPhysROworld = GetWorld();
 	G4LogicalVolume* fLogicROworld = fPhysROworld->GetLogicalVolume();
 
@@ -58,8 +52,24 @@ void PixelROWorld::Construct()
 	fSolidPixelSensorPixel = new G4Box("SensorPixelRO", pitchX / 2, pitchY / 2, thickness / 2.);
 	fLogicPixelSensorPixel = new G4LogicalVolume(fSolidPixelSensorPixel, 0, "SensorPixelROlogical", 0, 0, 0);
 
-	fPhysPixelSensorColumn = new G4PVDivision("Divided along X-axis", fLogicPixelSensorColumn, fLogicPixelSensor, kXAxis, G4int(X / fColumnSize), 0.);
-	fPhysPixelSensorPixel = new G4PVDivision("Divided along Y-axis", fLogicPixelSensorPixel, fLogicPixelSensorColumn, kYAxis, G4int(Y / fRowSize), 0.);
+	fPhysPixelSensorColumn = new G4PVDivision("Divided along X-axis", fLogicPixelSensorColumn, fLogicPixelSensor, kXAxis, nColumns, pitchX, offsetX);
+	fPhysPixelSensorPixel = new G4PVDivision("Divided along Y-axis", fLogicPixelSensorPixel, fLogicPixelSensorColumn, kYAxis, nRows, pitchY, offsetY);
+
+	// Print construction
+	EAxis axis;
+	G4int nReplicas;
+	G4double width, offset;
+	G4bool consuming;
+	fPhysPixelSensorColumn->GetReplicationData(axis, nReplicas, width, offset, consuming);
+	G4cout << "Pixel detector geometry: " << G4endl;
+	G4cout << "  Number of columns " << nReplicas << G4endl;
+	G4cout << "  Column width " << G4BestUnit(width, "Length") << G4endl;
+	G4cout << "  Column offset " << G4BestUnit(offset, "Length") << G4endl;
+
+	fPhysPixelSensorPixel->GetReplicationData(axis, nReplicas, width, offset, consuming);
+	G4cout << "  Number of rows " << nReplicas << G4endl;
+	G4cout << "  Row width " << G4BestUnit(width, "Length") << G4endl;
+	G4cout << "  Row offset " << G4BestUnit(offset, "Length") << G4endl;
 }
 
 void PixelROWorld::SetColumns(const G4int& Ncolumns, const G4double& size, const G4double& offset)
