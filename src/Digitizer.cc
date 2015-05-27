@@ -59,8 +59,8 @@ void Digitizer::Digitize()
 		G4double charge = it->second->GetEdep() / fEnergyPerCharge / eV;  // charge in electrons
 
 		bool digitExists = false;
-		for (G4int iDigi = 0; iDigi < actualPixelDigitsCollection->entries(); ++iDigi) {
-			if (column == (*actualPixelDigitsCollection)[iDigi]->GetColumn() && row == it->second->GetVolumeIdY()) {
+		for (G4int iDigi = 0; iDigi < actualPixelDigitsCollection->entries(); ++iDigi) {  // go through all already created digis
+			if (column == (*actualPixelDigitsCollection)[iDigi]->GetColumn() && row == (*actualPixelDigitsCollection)[iDigi]->GetRow()) {
 				(*actualPixelDigitsCollection)[iDigi]->Add(charge);
 				digitExists = true;
 				break;
