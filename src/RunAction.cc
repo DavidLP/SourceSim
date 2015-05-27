@@ -10,7 +10,7 @@ RunAction::RunAction() :
 		G4UserRunAction(), fHistoManager(0)
 {
 	// set printing event number per each event
-	G4RunManager::GetRunManager()->SetPrintProgress(1);
+	G4RunManager::GetRunManager()->SetPrintProgress(10000);
 
 	// Book predefined histograms
 	fHistoManager = new HistoManager();
