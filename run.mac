@@ -22,17 +22,18 @@
 #/gps/energy 0. keV  # primary ion at rest
 
 # create from energy distribution hist (fast)
-#/gps/ene/type Arb
-#/gps/hist/file Sr_90_1mmShield_energy.dat
-#/gps/hist/inter Lin
-#/gps/ang/type iso
-#/gps/ang/mintheta 135 deg
-#/gps/ang/maxtheta 180 deg
+/gps/ene/type Arb
+/gps/hist/file Sr_90_1mmShield_energy.dat
+/gps/hist/inter Lin
+/gps/ang/type iso
+/gps/ang/mintheta 0 deg
+/gps/ang/maxtheta 25 deg
+/gps/ang/rot1 -1 0 0  # direction defined into negative z (wtf)
 
-/gps/particle e- 
-/gps/energy 3.2 GeV
-/gps/direction 0 0 1
-/gps/position 0. 0. -8 cm
+#/gps/particle e- 
+#/gps/energy 3.2 GeV
+#/gps/direction 0 0 1
+#/gps/position 0. 0. -8 cm
 
 # position
 /gps/pos/type Volume
@@ -47,5 +48,5 @@
 /setup/trigger/enable 1
 /setup/sourceshield/enable 0
 
-/run/beamOn 10
+/run/beamOn 300000
 
