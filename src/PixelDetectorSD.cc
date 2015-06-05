@@ -7,7 +7,9 @@
 
 #include <iostream>
 
-const G4int maxHits = 100; // maximum number of hits in one event that are stored
+//TODO: sensor rotation is most likely not used
+
+const G4int cMaxHits = 100; // maximum number of hits in one event that are stored
 
 PixelDetectorSD::PixelDetectorSD(const G4String& name, const G4String& hitsCollectionName) :
 		G4VSensitiveDetector(name), fHitsMap(0)
@@ -29,14 +31,13 @@ void PixelDetectorSD::Initialize(G4HCofThisEvent* hitCollection)
 	hitCollection->AddHitsCollection(hcID, fHitsMap);
 
 	// Create hits
-	// fNpixel for pixel + one more for total sums
-	for (G4int i = 0; i < maxHits; i++) {
+	for (G4int i = 0; i < cMaxHits; i++) {
 		DetHit* t = new DetHit();
 		fHitsMap->add(i, t);
 	}
 }
 
-G4bool PixelDetectorSD::ProcessHits(G4Step* step, G4TouchableHistory* history)
+G4bool PixelDetectorSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 {
 	// energy deposit
 	G4double edep = step->GetTotalEnergyDeposit();
@@ -59,7 +60,7 @@ G4bool PixelDetectorSD::ProcessHits(G4Step* step, G4TouchableHistory* history)
 	}
 
 	for (std::map<G4int, DetHit*>::iterator it = fHitsMap->GetMap()->begin(); it != fHitsMap->GetMap()->end(); ++it){
-//	Per pixel steps accumulation would correspond to some digitization. Digitization should be independent thus no "per pixel histograming" here
+//	Per pixel steps accumulation would correspond to a simple digitization. Digitization should be independent thus no "per pixel histograming" here
 //		if (it->second->GetVolumeIdentifier() == iVolume){  // hits already exist, so add this step to it
 //			it->second->Add(edep, stepLength);
 //			break;
@@ -68,7 +69,7 @@ G4bool PixelDetectorSD::ProcessHits(G4Step* step, G4TouchableHistory* history)
 			it->second->SetVolumeIdX(touchable->GetReplicaNumber(1));  // column
 			it->second->SetVolumeIdY(touchable->GetReplicaNumber(0));  // row
 			it->second->Add(edep, stepLength);
-			it->second->SetPosition(step->GetPreStepPoint()->GetPosition());
+			it->second->SetPosition(touchable->GetHistory()->GetTopTransform().TransformPoint(step->GetPreStepPoint()->GetPosition()));
 			break;
 		}
 	}
@@ -76,7 +77,7 @@ G4bool PixelDetectorSD::ProcessHits(G4Step* step, G4TouchableHistory* history)
 	return true;
 }
 
-void PixelDetectorSD::EndOfEvent(G4HCofThisEvent* hitCollection)
+void PixelDetectorSD::EndOfEvent(G4HCofThisEvent*)
 {
 	if (verboseLevel > 1) {
 		G4int nofHits = fHitsMap->entries();
