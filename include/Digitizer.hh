@@ -6,6 +6,7 @@
 #include "PixelDigi.hh"
 
 class DigitizerMessenger;
+class DetHit;
 
 class Digitizer: public G4VDigitizerModule {
 	public:
@@ -18,11 +19,31 @@ class Digitizer: public G4VDigitizerModule {
 		void SetThreshold(const G4int&);  // threshold in electrons
 		void SetNoise(const G4int&);  // sigma of gaussian noise in electrons
 
-	private:
+		void PrintSettings();
 
-		G4double fEnergyPerCharge;
-		G4int fThreshold;
-		G4int fNoise;
+	private:
+		void AddHitToDigits(std::map<G4int, DetHit*>::const_iterator iHit, PixelDigitsCollection* digits);
+		void AddChargeToDigits(const int& column, const int& row, const double& charge, PixelDigitsCollection* digits);
+
+		double CalcChargeFraction(const double& x, const double& y, const double& z, const double& x_pitch, const double& y_pitch, const double& voltage, const int& x_pixel_offset, const int& y_pixel_offset, const double& temperature);
+		double CalcSigmaDiffusion(const double& length, const double& voltage, const double& temperature);
+		double CalcBivarianteNormalCDFWithLimits(const double& a1, const double& a2, const double& b1, const double& b2, const double& mu1, const double& mu2, const double& sigma);
+
+		//Digitization settings
+		bool fCalcChargeCloud;
+
+		//Digitization parameters
+		bool fReadOutDirection; // false: readout side more towards z (behind sensor)
+		G4double fEnergyPerCharge;  // charge per e-h pair
+		G4int fThreshold;  // detection thresholdl [e]
+		G4int fNoise;  // gaussian noise sigma [e]
+		G4double fTemperatur;  // [Kelvin]
+		G4double fBias;  // sensor bias votlage [V]
+		G4double fSensorThickness;  // [um]
+		G4double fPixelPitchX;  // [um]
+		G4double fPixelPitchY;  // [um]
+		G4int fNcolumns;
+		G4int fNrows;
 
 		PixelDigitsCollection* fPixelDigitsCollection;
 
