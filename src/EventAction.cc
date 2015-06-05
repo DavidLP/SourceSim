@@ -137,6 +137,7 @@ void EventAction::EndOfEventAction(const G4Event* event)
 
 	G4int eventID = event->GetEventID();
 
+	// Fill detector hits array (not digitized data)
 	if (fPixelDetectorHCID != -1) {
 		DetHitsMap* pixelhitmap = GetPixelHitsMap(fPixelDetectorHCID, event);
 		// fill ntuple
@@ -149,9 +150,11 @@ void EventAction::EndOfEventAction(const G4Event* event)
 			analysisManager->FillNtupleDColumn(0, 3, it->second->GetEdep());
 			analysisManager->FillNtupleDColumn(0, 4, it->second->GetTrackLength());
 			analysisManager->AddNtupleRow(0);
+//			G4cout << "   Position in sensor: " << std::setw(7) << G4BestUnit(it->second->GetPosition(), "Length") << G4endl;
 		}
 	}
 
+	// Fill detector digits array (=pixel hits)
 	Digitizer* pixelDigitizer = (Digitizer*) G4DigiManager::GetDMpointer()->FindDigitizerModule("PixelDigitizer");
 	if (pixelDigitizer) {
 		pixelDigitizer->Digitize();
@@ -163,7 +166,7 @@ void EventAction::EndOfEventAction(const G4Event* event)
 					analysisManager->FillNtupleIColumn(1, 0, eventID);
 					analysisManager->FillNtupleIColumn(1, 1, (*digitsCollection)[iDigits]->GetColumn());
 					analysisManager->FillNtupleIColumn(1, 2, (*digitsCollection)[iDigits]->GetRow());
-					analysisManager->FillNtupleIColumn(1, 3, G4int((*digitsCollection)[iDigits]->GetCharge()));
+					analysisManager->FillNtupleIColumn(1, 3, G4int((*digitsCollection)[iDigits]->GetCharge()));  // convert charge to int value; is multiple of [e]
 					analysisManager->AddNtupleRow(1);
 				}
 			}
