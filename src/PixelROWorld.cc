@@ -51,7 +51,7 @@ void PixelROWorld::Construct()
 
 	fSolidPixelSensorPixel = new G4Box("SensorPixelRO", pitchX / 2, pitchY / 2, thickness / 2.);
 	fLogicPixelSensorPixel = new G4LogicalVolume(fSolidPixelSensorPixel, 0, "SensorPixelROlogical", 0, 0, 0);
-
+	
 	fPhysPixelSensorColumn = new G4PVDivision("Divided along X-axis", fLogicPixelSensorColumn, fLogicPixelSensor, kXAxis, nColumns, pitchX, offsetX);
 	fPhysPixelSensorPixel = new G4PVDivision("Divided along Y-axis", fLogicPixelSensorPixel, fLogicPixelSensorColumn, kYAxis, nRows, pitchY, offsetY);
 
@@ -62,6 +62,7 @@ void PixelROWorld::Construct()
 	G4bool consuming;
 	fPhysPixelSensorColumn->GetReplicationData(axis, nReplicas, width, offset, consuming);
 	G4cout << "Pixel detector geometry: " << G4endl;
+	G4cout << "  Thickness " << G4BestUnit(fSolidPixelSensor->GetZHalfLength() * 2., "Length") << G4endl;
 	G4cout << "  Number of columns " << nReplicas << G4endl;
 	G4cout << "  Column width " << G4BestUnit(width, "Length") << G4endl;
 	G4cout << "  Column offset " << G4BestUnit(offset, "Length") << G4endl;
@@ -140,4 +141,29 @@ void PixelROWorld::SetSensorSizeY(G4double val)
 	fSolidPixelSensor->SetYHalfLength(val / 2.);
 	G4RunManager::GetRunManager()->GeometryHasBeenModified();
 	G4cout << "Sensor size y set to " << G4BestUnit(val, "Length") << G4endl;
+}
+
+double PixelROWorld::GetPixelPitchX()
+{
+	return pitchX;
+}
+
+double PixelROWorld::GetPixelPitchY()
+{
+	return pitchY;
+}
+
+double PixelROWorld::GetSensorThickness()
+{
+	return thickness;
+}
+
+int PixelROWorld::GetNcolumns()
+{
+	return nColumns;
+}
+
+int PixelROWorld::GetNrows()
+{
+	return nRows;
 }

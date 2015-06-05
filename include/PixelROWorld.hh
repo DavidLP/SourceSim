@@ -24,6 +24,12 @@ class PixelROWorld: public G4VUserParallelWorld {
 		void SetSensorPos(G4ThreeVector);
 		void SetSensorRot(G4double);
 
+		double GetPixelPitchX();
+		double GetPixelPitchY();
+		double GetSensorThickness();
+		int GetNcolumns();
+		int GetNrows();
+
 		void SetColumns(const G4int& Ncolumns, const G4double& size, const G4double& offset);
 		void SetRows(const G4int& Nrows, const G4double& size, const G4double& offset);
 
