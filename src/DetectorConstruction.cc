@@ -38,7 +38,7 @@
 // Std. sensor geometry, IBL sensor
 const G4double X = 20.45 * mm;  // total sensor tile x dimension (column)
 const G4double Y = 18.59 * mm;  // total sensor tile y dimension (row)
-const G4double thickness = 230 * um;
+const G4double thickness = 200 * um;
 
 
 G4ThreadLocal
@@ -210,6 +210,8 @@ void DetectorConstruction::ConstructSDandField()
 
 G4double DetectorConstruction::GetSensorThickness()
 {
+	if (fSolidSensor == 0)  // sensor not contructed yet
+		return thickness;
 	return fSolidSensor->GetZHalfLength() * 2.;
 }
 
@@ -329,17 +331,32 @@ void DetectorConstruction::SetSensorThickness(G4double val)
 	G4cout << "Sensor thickness set to " << G4BestUnit(val, "Length") << G4endl;
 }
 
-void DetectorConstruction::SetSensorSizeXY(G4double val)
+void DetectorConstruction::SetSensorSizeX(G4double val)
 {
 	fSolidSensor->SetXHalfLength(val / 2.);
-	fSolidSensor->SetYHalfLength(val / 2.);
 	G4RunManager::GetRunManager()->GeometryHasBeenModified();
-	G4cout << "Sensor size x,y set to " << G4BestUnit(val, "Length") << G4endl;
+	G4cout << "Sensor size x set to " << G4BestUnit(val, "Length") << G4endl;
 }
 
-G4double DetectorConstruction::GetSensorSizeXY()
+void DetectorConstruction::SetSensorSizeY(G4double val)
 {
+	fSolidSensor->SetYHalfLength(val / 2.);
+	G4RunManager::GetRunManager()->GeometryHasBeenModified();
+	G4cout << "Sensor size y set to " << G4BestUnit(val, "Length") << G4endl;
+}
+
+G4double DetectorConstruction::GetSensorSizeX()
+{
+	if (fSolidSensor == 0)
+		return X;
 	return fSolidSensor->GetXHalfLength() * 2.;
+}
+
+G4double DetectorConstruction::GetSensorSizeY()
+{
+	if (fSolidSensor == 0)
+		return Y;
+	return fSolidSensor->GetYHalfLength() * 2.;
 }
 
 void DetectorConstruction::SetTrigger(const bool& value)
