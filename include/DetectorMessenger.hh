@@ -38,7 +38,8 @@ class DetectorMessenger: public G4UImessenger
 
     G4UIcmdWithAString*        fSensorMaterCmd;
     G4UIcmdWithADoubleAndUnit* fSensorThickCmd;
-    G4UIcmdWithADoubleAndUnit* fSensorSizXYCmd;
+    G4UIcmdWithADoubleAndUnit* fSensorSizXCmd;
+    G4UIcmdWithADoubleAndUnit* fSensorSizYCmd;
     G4UIcmdWith3VectorAndUnit* fSensorPosCmd;
     G4UIcmdWithADoubleAndUnit* fSensorRotCmd;
 
