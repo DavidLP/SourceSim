@@ -89,8 +89,8 @@ int main(int argc,char** argv)
 
 	// Set material and parallel readout world
 	G4String parallelWorldName = "PixelReadoutWorld";
-	G4VUserDetectorConstruction* detector = new DetectorConstruction();
-	detector->RegisterParallelWorld(new PixelROWorld(parallelWorldName));
+	DetectorConstruction* detector = new DetectorConstruction();
+	detector->RegisterParallelWorld(new PixelROWorld(parallelWorldName, detector));
 	runManager->SetUserInitialization(detector);
 
 	// Set physics list for both worlds
