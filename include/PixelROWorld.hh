@@ -9,10 +9,11 @@ class G4LogicalVolume;
 class G4VPhysicalVolume;
 class G4PVDivision;
 class PixelDetectorMessenger;
+class DetectorConstruction;
 
 class PixelROWorld: public G4VUserParallelWorld {
 	public:
-		PixelROWorld(G4String& parallelWorldName);
+		PixelROWorld(G4String& parallelWorldName, DetectorConstruction* detector=0);
 		virtual ~PixelROWorld();
 
 		virtual void Construct();
@@ -34,6 +35,10 @@ class PixelROWorld: public G4VUserParallelWorld {
 		void SetRows(const G4int& Nrows, const G4double& size, const G4double& offset);
 
 	private:
+		G4double fSensorThickness;  // [um]
+		G4double fSensorX;  // [um]
+		G4double fSensorY;  // [um]
+
 		G4Box* fSolidPixelSensor;
 		G4LogicalVolume* fLogicPixelSensor;
 		G4VPhysicalVolume* fPhysPixelSensor;
