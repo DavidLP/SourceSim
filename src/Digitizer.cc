@@ -21,11 +21,15 @@
 #include "DetectorConstruction.hh"
 #include "PixelROWorld.hh"
 
-Digitizer::Digitizer(G4String name)
-		: G4VDigitizerModule(name), fCalcChargeCloud(true), fReadOutDirection(false), fEnergyPerCharge(3.74), fThreshold(2000),  // std. IBL detector
+Digitizer::Digitizer(G4String name) :
+		G4VDigitizerModule(name),
+		fCalcChargeCloud(true),
+		fReadOutDirection(false),
+		fEnergyPerCharge(3.74),
+		fThreshold(3000),  // std. IBL detector
 		fNoise(130),  // std. IBL detector
-		fTemperatur(294.15),  // room temp.
-		fBias(50.), fPixelDigitsCollection(0)
+		fTemperatur(298),  // 25 C
+		fBias(70.), fPixelDigitsCollection(0)
 
 {
 	G4String colName = "PixelDigitsCollection";
@@ -63,6 +67,8 @@ void Digitizer::Digitize()
 	if (!hitsCollection)
 		G4Exception("Digitizer::Digitize()", "Cannot access pixel hits collection", FatalException, "");
 
+//	std::cout<<"\nEVENT: "<<G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID()<<std::endl;
+
 	// This is a loop with an inner loop; speed wise not the best solution, but the geant4 examples are even worse and loop all hits + digits (1 pixel = 1 digit...), here the least amount of hits / digits were created and are looped
 	for (std::map<G4int, DetHit*>::const_iterator it = hitsCollection->GetMap()->begin(); it != hitsCollection->GetMap()->end(); ++it) {
 		if (it->second->GetVolumeIdX() == -1)  // speed up, do not loop remaining and all empty DetHits
@@ -77,7 +83,7 @@ void Digitizer::Digitize()
 	for (G4int iDigi = 0; iDigi < actualPixelDigitsCollection->entries(); ++iDigi) {
 		(*actualPixelDigitsCollection)[iDigi]->SetCharge(G4RandGauss::shoot((*actualPixelDigitsCollection)[iDigi]->GetCharge(), fNoise));  // add gaussian noise to the charge
 		if ((*actualPixelDigitsCollection)[iDigi]->GetCharge() >= fThreshold)
-		fPixelDigitsCollection->insert(new PixelDigi(*(*actualPixelDigitsCollection)[iDigi]));
+			fPixelDigitsCollection->insert(new PixelDigi(*(*actualPixelDigitsCollection)[iDigi]));
 	}
 
 	StoreDigiCollection(fPixelDigitsCollection);
@@ -91,53 +97,69 @@ void Digitizer::AddHitToDigits(std::map<G4int, DetHit*>::const_iterator iHit, Pi
 	G4double charge = iHit->second->GetEdep() / fEnergyPerCharge / eV;  // charge in electrons
 	G4ThreeVector position = iHit->second->GetPosition();
 
-	double z = 0; // z position in sensor [0..thickness]
+	double z = 0;  // z position in sensor [0..thickness]
 	double fraction = 0;  // fraction of the total charge for the actual pixel
 	double minFraction = 1e-5;
+	double totalFraction = 0;
 
 	if (fCalcChargeCloud) {  // distribute the deposited charge into neighboring pixels
-//		std::cout << "Calculate charge cloud for col/row = " << column << "/" << row << "\n";
-//		std::cout << "  Position in sensor: " << std::setw(7) << G4BestUnit(position, "Length") << G4endl;
 
 		if (fReadOutDirection)  // calculate drift/read out electronics direction
-			z = fSensorThickness / 2. + position[2];
+			z = fSensorThickness / 2. + position[2];  // RO side after sensor
 		else
-			z = fSensorThickness / 2. - position[2];
+			z = fSensorThickness / 2. - position[2];  // RO side before sensor
 
+//		if (G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID() == 11637)
+//			std::cout << column<<" "<<row<<" "<<charge<<"\n";
+
+		if (z == 0){  // special case. charge does not travel at all
+			AddChargeToDigits(column, row , charge, digits);
+			return;
+		}
+
+		// run time optimized loops using an abort condition utilizing that the charge sharing always decreases for increased distance to seed pixel and the fact that the total charge fraction sum is 1
 		for (int iColumn = 0; column + iColumn < fNcolumns; ++iColumn) {  // calc charge in pixels in column direction
-			if (CalcChargeFraction(position[0], position[1], z, fPixelPitchX, fPixelPitchY, fBias, iColumn, 0, fTemperatur) < minFraction)  // abort loop if charge fraction is already too low
+			if (totalFraction == 1. || CalcChargeFraction(position[0], position[1], z, fPixelPitchX, fPixelPitchY, fBias, iColumn, 0, fTemperatur) < minFraction)  // omit row loop if charge fraction is already too low for seed row (=0)
 				break;
 			for (int iRow = 0; iRow < fNrows; ++iRow) {  // calc charge in pixels in row direction
 				fraction = CalcChargeFraction(position[0], position[1], z, fPixelPitchX, fPixelPitchY, fBias, iColumn, iRow, fTemperatur);
-				if (fraction < minFraction)  //  abort loop if fraction is too small, next pixel would be even smaller
+				totalFraction += fraction;
+				if (fraction < minFraction)  //  abort loop if fraction is too small, next pixel have even smaller fraction
 					break;
-				AddChargeToDigits(column, row, charge * fraction, digits);
-//				std::cout<<"    "<<column + iColumn<<"/"<<row + iRow<<" "<<fraction<<" "<<fraction*charge<<"\n";
+				AddChargeToDigits(column + iColumn, row + iRow, charge * fraction, digits);
+				if (totalFraction == 1.)  // abort if all charge already distributed
+					break;
 			}
 			for (int iRow = -1; row + iRow >= 0; --iRow) {  // calc charge in pixels in -row direction
 				fraction = CalcChargeFraction(position[0], position[1], z, fPixelPitchX, fPixelPitchY, fBias, iColumn, iRow, fTemperatur);
-				if (fraction < minFraction)  //  abort loop if fraction is too small, next pixel would be even smaller
+				totalFraction += fraction;
+				if (fraction < minFraction)  //  abort loop if fraction is too small, next pixel have even smaller fraction
 					break;
-				AddChargeToDigits(column, row, charge * fraction, digits);
-//				std::cout<<"    "<<column + iColumn<<"/"<<row + iRow<<" "<<fraction<<" "<<fraction*charge<<"\n";
+				AddChargeToDigits(column + iColumn, row + iRow, charge * fraction, digits);
+				if (totalFraction == 1.)  // abort if all charge already distributed
+					break;
 			}
 		}
 		for (int iColumn = -1; column + iColumn >= 0; --iColumn) {  // calc charge in pixels in -column direction
-			if (CalcChargeFraction(position[0], position[1], z, fPixelPitchX, fPixelPitchY, fBias, iColumn, 0, fTemperatur) < minFraction)  // abort loop if charge fraction is already too low
+			if (totalFraction == 1. || CalcChargeFraction(position[0], position[1], z, fPixelPitchX, fPixelPitchY, fBias, iColumn, 0, fTemperatur) < minFraction)  // omit row loop if charge fraction is already too low for seed row (=0)
 				break;
 			for (int iRow = 0; iRow < fNrows; ++iRow) {  // calc charge in pixels in row direction
 				fraction = CalcChargeFraction(position[0], position[1], z, fPixelPitchX, fPixelPitchY, fBias, iColumn, iRow, fTemperatur);
-				if (fraction < minFraction)  //  abort loop if fraction is too small, next pixel would be even smaller
+				totalFraction += fraction;
+				if (fraction < minFraction)  //  abort loop if fraction is too small, next pixel have even smaller fraction
 					break;
-				AddChargeToDigits(column, row, charge * fraction, digits);
-//				std::cout<<"    "<<column + iColumn<<"/"<<row + iRow<<" "<<fraction<<" "<<fraction*charge<<"\n";
+				AddChargeToDigits(column + iColumn, row + iRow, charge * fraction, digits);
+				if (totalFraction == 1.)  // abort if all charge already distributed
+					break;
 			}
 			for (int iRow = -1; row + iRow >= 0; --iRow) {  // calc charge in pixels in -row direction
 				fraction = CalcChargeFraction(position[0], position[1], z, fPixelPitchX, fPixelPitchY, fBias, iColumn, iRow, fTemperatur);
-				if (fraction < minFraction)  //  abort loop if fraction is too small, next pixel would be even smaller
+				totalFraction += fraction;
+				if (fraction < minFraction)  //  abort loop if fraction is too small, next pixel have even smaller fraction
 					break;
-				AddChargeToDigits(column, row, charge * fraction, digits);
-//				std::cout<<"    "<<column + iColumn<<"/"<<row + iRow<<" "<<fraction<<" "<<fraction*charge<<"\n";
+				AddChargeToDigits(column + iColumn, row + iRow, charge * fraction, digits);
+				if (totalFraction == 1.)  // abort if all charge already distributed
+					break;
 			}
 		}
 	}
@@ -148,6 +170,8 @@ void Digitizer::AddHitToDigits(std::map<G4int, DetHit*>::const_iterator iHit, Pi
 void Digitizer::AddChargeToDigits(const int& column, const int& row, const double& charge, PixelDigitsCollection* digits)
 {
 // Runtime ugly function, a two key hash map would be nice...
+//	if (G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID() == 11637)
+//		std::cout << "    AddChargeToDigits col/row/charge=" <<column<<"/"<<row<<"/"<<charge<<"\n";
 	bool digitExists = false;
 	for (G4int iDigi = 0; iDigi < digits->entries(); ++iDigi) {  // go through all already created digis
 		if (column == (*digits)[iDigi]->GetColumn() && row == (*digits)[iDigi]->GetRow()) {
@@ -166,7 +190,6 @@ void Digitizer::AddChargeToDigits(const int& column, const int& row, const doubl
 double Digitizer::CalcChargeFraction(const double& x, const double& y, const double& z, const double& x_pitch, const double& y_pitch, const double& voltage, const int& x_pixel_offset, const int& y_pixel_offset, const double& temperature)
 {
 	/* Calculates the fraction of charge [0, 1] within one rectangular pixel volume when diffusion is considered. The calculation is done within the local pixel coordinate system, with the origin [x_pitch / 2, y_pitch / 2, 0]
-	 Parameters:
 	 x, y : position where the charge fraction has to be measured
 	 x_pitch, y_pitch : pixel dimensions in x and y
 	 x_pixel_offset, y_pixel_offset : pixel index relative to the center pixel where the charge fraction has to be calculated
@@ -174,15 +197,17 @@ double Digitizer::CalcChargeFraction(const double& x, const double& y, const dou
 	 temperature : the temperature in Kelvin
 	 */
 
-//	std::cout << G4BestUnit(x, "Length")<<"\n";
-//	std::cout << x / um<<"\n";
-//	std::cout << x * um<<"\n";
-
-//	std::cout << "        "<<G4BestUnit(x, "Length")<<" "<<G4BestUnit(y, "Length")<<" "<<G4BestUnit(z, "Length")<<" "<<G4BestUnit(x_pitch, "Length")<<" "<<G4BestUnit(y_pitch, "Length")<<" "<<voltage<<" "<<x_pixel_offset<<" "<<y_pixel_offset<<" "<<temperature<<"\n";
-
 	double sigma = CalcSigmaDiffusion(z, voltage, temperature);
+
+//	if (G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID() == 11637){
+//		std::cout << "    CalcChargeFraction " <<"\n";
+//		std::cout << "      x/y/z " << G4BestUnit(x, "Length")<<"/"<< G4BestUnit(y, "Length")<<"/"<<G4BestUnit(z, "Length")<<"\n";
+//		std::cout << "        "<<G4BestUnit(x, "Length")<<" "<<G4BestUnit(y, "Length")<<" "<<G4BestUnit(z, "Length")<<" "<<G4BestUnit(x_pitch, "Length")<<" "<<G4BestUnit(y_pitch, "Length")<<" "<<voltage<<" "<<x_pixel_offset<<" "<<y_pixel_offset<<" "<<temperature<<"\n";
+//		std::cout << "      sigma " << G4BestUnit(sigma, "Length")<<"\n";
+//	}
+
 	if (sigma == 0)
-		sigma = 1e-9;
+		return 1.;
 	return CalcBivarianteNormalCDFWithLimits(x_pitch * (x_pixel_offset - 1. / 2.), x_pitch * (x_pixel_offset + 1. / 2.), y_pitch * (y_pixel_offset - 1. / 2.), y_pitch * (y_pixel_offset + 1. / 2.), x, y, sigma);
 }
 
@@ -195,7 +220,6 @@ double Digitizer::CalcBivarianteNormalCDFWithLimits(const double& a1, const doub
 double Digitizer::CalcSigmaDiffusion(const double& length, const double& voltage, const double& temperature)
 {
 	/* Calculates the sigma of the diffusion according to Einsteins equation.
-	 Parameters:
 	 length : the drift length
 	 voltage : the applied voltage
 	 temperature : the temperature in Kelvin
@@ -208,12 +232,12 @@ void Digitizer::PrintSettings()
 {
 	G4cout << "Digitization settings: " << G4endl;
 	G4cout << "  Calculate charge cloud\t" << fCalcChargeCloud << G4endl;
-	G4cout << "\tDigitization parameters: " << G4endl;
-	G4cout << "\t  Thickness\t" << G4BestUnit(fSensorThickness, "Length") << G4endl;
-	G4cout << "\t  Number of columns\t" << fNcolumns << G4endl;
-	G4cout << "\t  Column width\t" << G4BestUnit(fPixelPitchX, "Length") << G4endl;
-	G4cout << "\t  Number of rows\t" << fNrows << G4endl;
-	G4cout << "\t  Row width\t" << G4BestUnit(fPixelPitchY, "Length") << G4endl;
+	G4cout << "  Digitization parameters: " << G4endl;
+	G4cout << "    Thickness\t" << G4BestUnit(fSensorThickness, "Length") << G4endl;
+	G4cout << "    Number of columns\t" << fNcolumns << G4endl;
+	G4cout << "    Column width\t" << G4BestUnit(fPixelPitchX, "Length") << G4endl;
+	G4cout << "    Number of rows\t" << fNrows << G4endl;
+	G4cout << "    Row width\t" << G4BestUnit(fPixelPitchY, "Length") << G4endl;
 }
 
 void Digitizer::SetEnergyPerCharge(const G4double& energyPerCharge)
