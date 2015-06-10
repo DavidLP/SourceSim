@@ -28,8 +28,8 @@ Digitizer::Digitizer(G4String name) :
 		fEnergyPerCharge(3.74),
 		fThreshold(3000),  // std. IBL detector
 		fNoise(130),  // std. IBL detector
-		fTemperatur(298),  // 25 C
-		fBias(70.), fPixelDigitsCollection(0)
+		fTemperatur(300),  // 26.8 C
+		fBias(60.), fPixelDigitsCollection(0)
 
 {
 	G4String colName = "PixelDigitsCollection";
@@ -253,5 +253,18 @@ void Digitizer::SetThreshold(const G4int& threshold)
 void Digitizer::SetNoise(const G4int& noise)
 {
 	fNoise = noise;
+}
+
+void Digitizer::SetBias(const G4double& bias)
+{
+	fBias = bias;
+}
+void Digitizer::SetTemperature(const G4double& temperature)
+{
+	fTemperatur = temperature;
+}
+void Digitizer::SetSensorZdirection(const bool& direction)
+{
+	fReadOutDirection = direction;
 }
 

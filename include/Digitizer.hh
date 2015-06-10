@@ -18,6 +18,9 @@ class Digitizer: public G4VDigitizerModule {
 		void SetEnergyPerCharge(const G4double&);  // energy per charge in electrons per electronvolt, e.g. silicon 3.61-3.74
 		void SetThreshold(const G4int&);  // threshold in electrons
 		void SetNoise(const G4int&);  // sigma of gaussian noise in electrons
+		void SetBias(const G4double&);  // sensor bias [V]
+		void SetTemperature(const G4double&);  // sensor temperatur [K]
+		void SetSensorZdirection(const bool&);  // electron z-drift direction, always towards readout electrode; false: in z-direction
 
 		void PrintSettings();
 
@@ -39,6 +42,8 @@ class Digitizer: public G4VDigitizerModule {
 		G4int fNoise;  // gaussian noise sigma [e]
 		G4double fTemperatur;  // [Kelvin]
 		G4double fBias;  // sensor bias votlage [V]
+
+		//Constant variables that cannot be changed yet between runs
 		G4double fSensorThickness;  // [um]
 		G4double fPixelPitchX;  // [um]
 		G4double fPixelPitchY;  // [um]

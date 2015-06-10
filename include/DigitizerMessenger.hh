@@ -6,6 +6,7 @@
 
 class Digitizer;
 class G4UIcmdWithAnInteger;
+class G4UIcmdWithADouble;
 
 class DigitizerMessenger: public G4UImessenger {
 	public:
@@ -18,7 +19,9 @@ class DigitizerMessenger: public G4UImessenger {
 		Digitizer* fDigitizer;
 		G4UIcmdWithAnInteger* fThresholdCmd;
 		G4UIcmdWithAnInteger* fNoiseCmd;
-
+		G4UIcmdWithADouble* fBiasCmd;
+		G4UIcmdWithADouble* fTemperatureCmd;
+		G4UIcmdWithAnInteger* fDriftDirectionCmd;
 };
 
 #endif
