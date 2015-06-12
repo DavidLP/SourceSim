@@ -70,6 +70,7 @@ G4bool PixelDetectorSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 			it->second->SetVolumeIdY(touchable->GetReplicaNumber(0));  // row
 			it->second->Add(edep, stepLength);
 			it->second->SetPosition(touchable->GetHistory()->GetTopTransform().TransformPoint(step->GetPreStepPoint()->GetPosition()));
+			it->second->SetParticle(step->GetTrack()->GetParticleDefinition()->GetParticleName());
 			break;
 		}
 	}

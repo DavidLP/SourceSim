@@ -24,15 +24,17 @@ RunAction::RunAction() :
 
 	analysisManager->SetFirstNtupleId(0);
 
+	// Detector hit tuple (every sensor interaction creates a hit)
 	analysisManager->CreateNtuple("Detector Hits", "A step within the detector volume");  // ID 0
 	analysisManager->CreateNtupleIColumn(0, "Event");
 	analysisManager->CreateNtupleIColumn(0, "VolumeIdX");
 	analysisManager->CreateNtupleIColumn(0, "VolumeIdY");
 	analysisManager->CreateNtupleDColumn(0, "EnergyDeposit");
 	analysisManager->CreateNtupleDColumn(0, "TrackLength");
+	analysisManager->CreateNtupleSColumn(0, "Particle");
 	analysisManager->FinishNtuple(0);
 
-//	 Creating pixel digi hit ntuple
+	//	 Creating pixel digi hit ntuple (per pixel charge)
 	analysisManager->CreateNtuple("Pixel Digits", "A pixel hit");  // ID 1
 	analysisManager->CreateNtupleIColumn(1, "event");  // index
 	analysisManager->CreateNtupleIColumn(1, "column");  // index

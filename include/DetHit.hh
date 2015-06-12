@@ -34,6 +34,7 @@ class DetHit: public G4VHit
 		void SetVolumeIdX(const G4int& volumeIDx);
 		void SetVolumeIdY(const G4int& volumeIDy);
 		void SetPosition(const G4ThreeVector& position);
+		void SetParticle(const G4String& particle);
 
 		// get methods
 		G4double GetEdep() const;
@@ -41,12 +42,14 @@ class DetHit: public G4VHit
 		G4int GetVolumeIdX() const;
 		G4int GetVolumeIdY() const;
 		G4ThreeVector GetPosition() const;
+		G4String GetParticle() const;
 
 	private:
 		G4double fEdep;        ///< Energy deposit in the sensitive volume
 		G4double fTrackLength;  ///< Track length in the  sensitive volume
 		G4int fVolumeIdX, fVolumeIdY;  ///< the sensitive volume identifier (here: pixel)
 		G4ThreeVector fPosition; ///the position with respect to the global world mean
+		G4String fParticle; ///the particle type, needed for charge cloud
 };
 
 typedef G4THitsMap<DetHit> DetHitsMap;
@@ -103,6 +106,16 @@ inline G4int DetHit::GetVolumeIdX() const
 inline G4int DetHit::GetVolumeIdY() const
 {
 	return fVolumeIdY;
+}
+
+inline void DetHit::SetParticle(const G4String& particle)
+{
+	fParticle = particle;
+}
+
+inline G4String DetHit::GetParticle() const
+{
+	return fParticle;
 }
 
 inline void DetHit::SetPosition(const G4ThreeVector& position)

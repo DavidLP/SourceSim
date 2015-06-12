@@ -27,6 +27,7 @@ DetHit::DetHit(const DetHit& right) :
 	fVolumeIdX = right.fVolumeIdX;
 	fVolumeIdY = right.fVolumeIdY;
 	fPosition = right.fPosition;
+	fParticle = right.fParticle;
 }
 
 const DetHit& DetHit::operator=(const DetHit& right)
@@ -36,7 +37,7 @@ const DetHit& DetHit::operator=(const DetHit& right)
 	fVolumeIdX = right.fVolumeIdX;
 	fVolumeIdY = right.fVolumeIdY;
 	fPosition = right.fPosition;
-
+	fParticle = right.fParticle;
 	return *this;
 }
 
@@ -56,5 +57,5 @@ G4int DetHit::operator==(const DetHit& right) const
 
 void DetHit::Print()
 {
-	G4cout << "Edep: " << std::setw(7) << G4BestUnit(fEdep, "Energy") << " track length: " << std::setw(7) << G4BestUnit(fTrackLength, "Length") << " volumne id x/y"<<fVolumeIdX<<"/"<<fVolumeIdY<< G4endl;
+	G4cout << "Edep: " << std::setw(7) << G4BestUnit(fEdep, "Energy") << " track length: " << std::setw(7) << G4BestUnit(fTrackLength, "Length") << " volumne id x/y"<<fVolumeIdX<<"/"<<fVolumeIdY<<" particle "<<fParticle<< G4endl;
 }
