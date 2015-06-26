@@ -1,22 +1,15 @@
 #include "DetectorMessenger.hh"
 
+#include "DetectorConstruction.hh"
+#include "G4UIdirectory.hh"
+#include "G4UIcmdWithAString.hh"
+#include "G4UIcmdWithAnInteger.hh"
+#include "G4UIcmdWithADoubleAndUnit.hh"
+#include "G4UIcmdWithoutParameter.hh"
+#include "G4UIcmdWith3VectorAndUnit.hh"
+
 DetectorMessenger::DetectorMessenger(DetectorConstruction * Det) :
-		G4UImessenger(), fDetector(Det), fSetupDir(0), fWorldDir(0), fSensorDir(0), fTriggerDir(0), fCollDir(0),
-
-		fWorldMaterCmd(0), fWorldZCmd(0), fWorldXYCmd(0),
-
-		fSensorMaterCmd(0), fSensorThickCmd(0), fSensorSizXCmd(0), fSensorSizYCmd(0), fSensorPosCmd(0), fSensorRotCmd(0),
-
-		fTriggerToggleCmd(0), fTriggerMaterCmd(0), fTriggerThickCmd(0), fTriggerSizXYCmd(0), fTriggerPosCmd(0),
-
-		fCollToggleCmd(0), fCollInnerMaterCmd(0), fCollOuterMaterCmd(0), fCollInnerRadiusCmd(0), fCollMiddleRadiusCmd(0), fCollOuterRadiusCmd(0), fCollThickCmd(
-				0), fCollPosCmd(0),
-
-		fSourceShieldToggleCmd(0), fSourceShieldMaterCmd(0), fSourceShieldThickCmd(0), fSourceShieldSizXYCmd(0), fSourceShieldPosCmd(0),
-
-		fShieldToggleCmd(0), fShieldMaterCmd(0), fShieldThickCmd(0), fShieldSizXYCmd(0), fShieldPosCmd(0),
-
-		fTestCmd(0)
+		G4UImessenger(), fDetector(Det)
 {
 	defineCommands();
 }
@@ -328,7 +321,7 @@ void DetectorMessenger::SetNewValue(G4UIcommand* command, G4String newValue)
 	if (command == fSensorSizXCmd)
 		fDetector->SetSensorSizeX(fSensorSizXCmd->GetNewDoubleValue(newValue));
 	if (command == fSensorSizYCmd)
-			fDetector->SetSensorSizeY(fSensorSizYCmd->GetNewDoubleValue(newValue));
+		fDetector->SetSensorSizeY(fSensorSizYCmd->GetNewDoubleValue(newValue));
 	if (command == fSensorPosCmd)
 		fDetector->SetSensorPos(fSensorPosCmd->GetNew3VectorValue(newValue));
 	if (command == fSensorRotCmd)

@@ -41,8 +41,7 @@ const G4double Y = 18.59 * mm;  // total sensor tile y dimension (row)
 const G4double thickness = 200 * um;
 
 
-G4ThreadLocal
-G4GlobalMagFieldMessenger* DetectorConstruction::fMagFieldMessenger = 0;
+G4ThreadLocal G4GlobalMagFieldMessenger* DetectorConstruction::fMagFieldMessenger = 0;
 
 DetectorConstruction::DetectorConstruction() :
 		G4VUserDetectorConstruction(), fCheckOverlaps(true), fWorldMaterial(0), fSolidWorld(0), fLogicWorld(0), fPhysWorld(0), fSensorMaterial(0), fSolidSensor(
