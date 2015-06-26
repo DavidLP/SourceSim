@@ -39,6 +39,6 @@ endforeach()
 file(COPY unit_test DESTINATION ${PROJECT_BINARY_DIR})
 
 # Copy converter folder to the build directory
-file(COPY converter DESTINATION ${PROJECT_BINARY_DIR})
+file(COPY tools DESTINATION ${PROJECT_BINARY_DIR})
 
 install(TARGETS SourceSimulation DESTINATION bin)
