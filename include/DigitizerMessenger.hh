@@ -1,5 +1,5 @@
-#ifndef GammaRayTel_h
-#define GammaRayTel_h 1
+#ifndef DigitizerMessenger_h
+#define DigitizerMessenger_h 1
 
 #include "G4UImessenger.hh"
 #include "globals.hh"
@@ -17,6 +17,7 @@ class DigitizerMessenger: public G4UImessenger {
 
 	private:
 		Digitizer* fDigitizer;
+		G4UIdirectory* fDigiSetupDir;
 		G4UIcmdWithAnInteger* fThresholdCmd;
 		G4UIcmdWithAnInteger* fNoiseCmd;
 		G4UIcmdWithADouble* fBiasCmd;
