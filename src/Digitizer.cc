@@ -22,15 +22,11 @@
 #include "PixelROWorld.hh"
 
 Digitizer::Digitizer(G4String name) :
-		G4VDigitizerModule(name),
-		fCalcChargeCloud(true),
-		fReadOutDirection(false),
-		fEnergyPerCharge(3.74),
-		fThreshold(3000),  // std. IBL detector
+		G4VDigitizerModule(name), fCalcChargeCloud(true), fReadOutDirection(true), fEnergyPerCharge(3.74), fThreshold(2000),  // std. IBL detector
 		fNoise(130),  // std. IBL detector
-		fTemperatur(300),  // 26.8 C
-		fBias(60.), fPixelDigitsCollection(0)
-
+		fTemperatur(330),  // 56.8 C (uncooled 50-60 is common)
+		fBias(60.),
+		fPixelDigitsCollection(0)
 {
 	G4String colName = "PixelDigitsCollection";
 	collectionName.push_back(colName);
@@ -95,7 +91,7 @@ void Digitizer::AddHitToDigits(std::map<G4int, DetHit*>::const_iterator iHit, Pi
 	G4int column = iHit->second->GetVolumeIdX();
 	G4int row = iHit->second->GetVolumeIdY();
 	G4double charge = iHit->second->GetEdep() / fEnergyPerCharge / eV;  // charge in electrons
-	G4ThreeVector position = iHit->second->GetPosition();
+	G4ThreeVector position = iHit->second->GetPosition();  // are negative in z or not?
 
 	double z = 0;  // z position in sensor [0..thickness]
 	double fraction = 0;  // fraction of the total charge for the actual pixel
@@ -103,17 +99,19 @@ void Digitizer::AddHitToDigits(std::map<G4int, DetHit*>::const_iterator iHit, Pi
 	double totalFraction = 0;
 
 	if (fCalcChargeCloud) {  // distribute the deposited charge into neighboring pixels
-
 		if (fReadOutDirection)  // calculate drift/read out electronics direction
-			z = fSensorThickness / 2. + position[2];  // RO side after sensor
+			z = fSensorThickness / 2. - position[2];  // RO after sensor in beam
 		else
-			z = fSensorThickness / 2. - position[2];  // RO side before sensor
+			z = fSensorThickness / 2. + position[2];  // RO before sensor in beam
 
-//		if (G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID() == 11637)
-//			std::cout << column<<" "<<row<<" "<<charge<<"\n";
+		// Fix instabilities in GEANT4; I guess
+		if (z < 0)
+			z = 0.;
+		if (z > fSensorThickness)
+			z = fSensorThickness;
 
-		if (z == 0){  // special case. charge does not travel at all
-			AddChargeToDigits(column, row , charge, digits);
+		if (z == 0) {  // special case. charge does not travel at all
+			AddChargeToDigits(column, row, charge, digits);
 			return;
 		}
 
@@ -243,28 +241,37 @@ void Digitizer::PrintSettings()
 void Digitizer::SetEnergyPerCharge(const G4double& energyPerCharge)
 {
 	fEnergyPerCharge = energyPerCharge;
+	std::cout << "Set energy per e-h pair to " << G4BestUnit(energyPerCharge, "Energy") << std::endl; // FIXME: G4cout + MT not working
 }
 
 void Digitizer::SetThreshold(const G4int& threshold)
 {
 	fThreshold = threshold;
+	std::cout << "Set threshold to " << threshold <<" electrons" << std::endl; // FIXME: G4cout + MT not working
 }
 
 void Digitizer::SetNoise(const G4int& noise)
 {
 	fNoise = noise;
+	std::cout << "Set noise to " << noise <<" electrons" << std::endl; // FIXME: G4cout + MT not working
 }
 
 void Digitizer::SetBias(const G4double& bias)
 {
 	fBias = bias;
+	std::cout << "Set bias voltage to " <<bias<< " volt" << std::endl; // FIXME: G4cout + MT not working
 }
 void Digitizer::SetTemperature(const G4double& temperature)
 {
 	fTemperatur = temperature;
+	std::cout << "Set temperature to " << temperature <<" Kelvin" << std::endl; // FIXME: G4cout + MT not working
 }
 void Digitizer::SetSensorZdirection(const bool& direction)
 {
 	fReadOutDirection = direction;
+	if (direction)
+		std::cout << "Set read out electronics behind sensor" << std::endl; // FIXME: G4cout + MT not working
+	else
+		std::cout << "Set read out electronics before sensor" << std::endl; // FIXME: G4cout + MT not working
 }
 
