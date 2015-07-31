@@ -61,15 +61,15 @@ G4bool PixelDetectorSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 
 	for (std::map<G4int, DetHit*>::iterator it = fHitsMap->GetMap()->begin(); it != fHitsMap->GetMap()->end(); ++it){
 //	Per pixel steps accumulation would correspond to a simple digitization. Digitization should be independent thus no "per pixel histograming" here
-//		if (it->second->GetVolumeIdentifier() == iVolume){  // hits already exist, so add this step to it
-//			it->second->Add(edep, stepLength);
-//			break;
-//		}
 		if (it->second->GetVolumeIdX() == -1){
 			it->second->SetVolumeIdX(touchable->GetReplicaNumber(1));  // column
 			it->second->SetVolumeIdY(touchable->GetReplicaNumber(0));  // row
 			it->second->Add(edep, stepLength);
-			it->second->SetPosition(touchable->GetHistory()->GetTopTransform().TransformPoint(step->GetPreStepPoint()->GetPosition()));
+			if (step->GetTrack()->GetParticleDefinition()->GetParticleName() == "gamma"){  // gamma interaction seems to takes place as a post step process, attenuation result is checked and correct
+				it->second->SetPosition(touchable->GetHistory()->GetTopTransform().TransformPoint(step->GetPostStepPoint()->GetPosition()));
+			}
+			else // not too sure what to do with electrons / protons; so I assume charge is created at the beginning of the step
+				it->second->SetPosition(touchable->GetHistory()->GetTopTransform().TransformPoint(step->GetPreStepPoint()->GetPosition()));
 			it->second->SetParticle(step->GetTrack()->GetParticleDefinition()->GetParticleName());
 			break;
 		}
