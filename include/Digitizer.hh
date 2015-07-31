@@ -15,6 +15,7 @@ class Digitizer: public G4VDigitizerModule {
 		~Digitizer();
 
 		void Digitize();
+
 		void SetEnergyPerCharge(const G4double&);  // energy per charge in electrons per electronvolt, e.g. silicon 3.61-3.74
 		void SetThreshold(const G4int&);  // threshold in electrons
 		void SetNoise(const G4int&);  // sigma of gaussian noise in electrons
@@ -23,6 +24,7 @@ class Digitizer: public G4VDigitizerModule {
 		void SetSensorZdirection(const bool&);  // electron z-drift direction, always towards readout electrode; false: in z-direction
 		void SetInitChargeCloudSigma(const G4double&); // the initial spacing of the charge cloud sigma [um]
 		void SetChargeCloudSigmaCorrection(const G4double&); // the initial spacing of the charge cloud sigma [um]
+		void SetTrigger(const bool&); // the detector hits are only stored if a trigger exists in the event
 
 		void PrintSettings();
 
@@ -46,6 +48,7 @@ class Digitizer: public G4VDigitizerModule {
 		G4double fBias;  // sensor bias votlage [V]
 		G4double fSigma0; // initial charge cloud sigma [um]
 		G4double fSigmaCC; // correction factor for charge cloud sigma
+		bool fTriggerHits;  // create hits only if there are hits in the trigger volume
 
 		//Constant variables that cannot be changed yet between runs, yet
 		G4double fSensorThickness;  // [um]
@@ -58,6 +61,7 @@ class Digitizer: public G4VDigitizerModule {
 
 		DigitizerMessenger* digiMessenger;
 
+		G4int fTriggerHCID;
 };
 
 #endif

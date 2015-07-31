@@ -26,9 +26,11 @@ Digitizer::Digitizer(G4String name) :
 		fNoise(130),  // std. IBL detector
 		fTemperatur(330),  // 56.8 C (uncooled 50-60 is common)
 		fBias(60.),  // bias of the sensor in volt
-		fSigma0(2.), // initial charge cloud gaussian profile sigma
+		fSigma0(2.*um), // initial charge cloud gaussian profile sigma
 		fSigmaCC(1.3), // correction factor for charge cloud sigma to take into account diffusion + repulsion
-		fPixelDigitsCollection(0)
+		fTriggerHits(false),  // trigger: create digits only if trigger volume is hit
+		fPixelDigitsCollection(0),
+		fTriggerHCID(-1)
 {
 	G4String colName = "PixelDigitsCollection";
 	collectionName.push_back(colName);
@@ -58,6 +60,19 @@ void Digitizer::Digitize()
 
 	// Create a temporary actual event digits collection, to be able to remove hits below threshold, G4TDigiCollection does not support deleting entries ?!
 	PixelDigitsCollection* actualPixelDigitsCollection = new PixelDigitsCollection("PixelDigitizer", "PixelDigitsCollection");
+	// Create the result actual event digits collection
+	fPixelDigitsCollection = new PixelDigitsCollection("PixelDigitizer", "PixelDigitsCollection");
+
+	// Trigger machanism
+	fTriggerHCID = G4SDManager::GetSDMpointer()->GetCollectionID("Trigger/TriggerMechanism");
+	if (fTriggerHits && fTriggerHCID != -1){  // check if there is a trigger volume and if the detector hits are triggered
+		const G4Event* event = G4EventManager::GetEventManager()->GetConstCurrentEvent();
+		G4THitsMap<G4double>* triggerHits = static_cast<G4THitsMap<G4double>*>(event->GetHCofThisEvent()->GetHC(fTriggerHCID));
+		if (triggerHits->GetSize() == 0){  // abort digitization if the trigger is not hit
+			StoreDigiCollection(fPixelDigitsCollection);
+			return;
+		}
+	}
 
 	// Get actual event hits collection
 	G4int pixelDetectorHCID = G4SDManager::GetSDMpointer()->GetCollectionID("PixelDetektor/PixelHitCollection");
@@ -73,9 +88,6 @@ void Digitizer::Digitize()
 			break;
 		AddHitToDigits(it, actualPixelDigitsCollection);
 	}
-
-	// Create the result actual event digits colection
-	fPixelDigitsCollection = new PixelDigitsCollection("PixelDigitizer", "PixelDigitsCollection");
 
 	// Apply noise and threshold to all actual pixel digis
 	for (G4int iDigi = 0; iDigi < actualPixelDigitsCollection->entries(); ++iDigi) {
@@ -315,4 +327,11 @@ void Digitizer::SetChargeCloudSigmaCorrection(const G4double& sigmaCC)  // the s
 		std::cout << "Set charge cloud sigma correction factor to " << sigmaCC << std::endl; // FIXME: G4cout + MT not working
 	}
 }
-
+void Digitizer::SetTrigger(const bool& triggerHits)
+{
+	fTriggerHits = triggerHits;
+	if (triggerHits)
+		std::cout << "Set trigger functionality to ON " << std::endl; // FIXME: G4cout + MT not working
+	else
+		std::cout << "Set trigger functionality to OFF " << std::endl; // FIXME: G4cout + MT not working
+}

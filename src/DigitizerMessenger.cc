@@ -53,6 +53,12 @@ DigitizerMessenger::DigitizerMessenger(Digitizer* digitizer)
 	fCorrChargeCloudCmd->SetParameterName("choice", true);
 	fCorrChargeCloudCmd->SetDefaultValue(1.);
 	fCorrChargeCloudCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+
+	fTriggerCmd = new G4UIcmdWithAnInteger("/digitizer/trigger", this);
+	fTriggerCmd->SetGuidance("Enable the triggering of detector hits");
+	fTriggerCmd->SetParameterName("choice", true);
+	fTriggerCmd->SetDefaultValue((G4int) 0);
+	fTriggerCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
 }
 
 DigitizerMessenger::~DigitizerMessenger()
@@ -92,6 +98,12 @@ void DigitizerMessenger::SetNewValue(G4UIcommand * command, G4String newValue)
 			fDigitizer->SetSensorZdirection(true);
 		else
 			fDigitizer->SetSensorZdirection(false);
+	}
+	if (command == fTriggerCmd) {
+		if (fTriggerCmd->GetNewIntValue(newValue) > 0)
+			fDigitizer->SetTrigger(true);
+		else
+			fDigitizer->SetTrigger(false);
 	}
 }
 
