@@ -57,5 +57,5 @@ G4int DetHit::operator==(const DetHit& right) const
 
 void DetHit::Print()
 {
-	G4cout << "Edep: " << std::setw(7) << G4BestUnit(fEdep, "Energy") << " track length: " << std::setw(7) << G4BestUnit(fTrackLength, "Length") << " volumne id x/y"<<fVolumeIdX<<"/"<<fVolumeIdY<<" particle "<<fParticle<< G4endl;
+	G4cout << "DetHit: Edep " << std::setw(7) << G4BestUnit(fEdep, "Energy") << ", position " << std::setw(7) << G4BestUnit(fPosition, "Length") << ", track length " << std::setw(7) << G4BestUnit(fTrackLength, "Length") << ", volumne id x/y "<<fVolumeIdX<<"/"<<fVolumeIdY<<", particle "<<fParticle<< G4endl;
 }
