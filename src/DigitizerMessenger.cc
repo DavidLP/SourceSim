@@ -4,6 +4,7 @@
 #include "G4SystemOfUnits.hh"
 #include "G4UIcmdWithAnInteger.hh"
 #include "G4UIcmdWithADouble.hh"
+#include "G4UIcmdWithADoubleAndUnit.hh"
 
 DigitizerMessenger::DigitizerMessenger(Digitizer* digitizer)
 		: G4UImessenger(), fDigitizer(digitizer)
@@ -40,6 +41,18 @@ DigitizerMessenger::DigitizerMessenger(Digitizer* digitizer)
 	fDriftDirectionCmd->SetParameterName("choice", true);
 	fDriftDirectionCmd->SetDefaultValue((G4int) 0);
 	fDriftDirectionCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+
+	fInitChargeCloudCmd = new G4UIcmdWithADoubleAndUnit("/digitizer/initsigmacc", this);
+	fInitChargeCloudCmd->SetGuidance("Initial charge cloud sigma");
+	fInitChargeCloudCmd->SetParameterName("initcc", true);
+	fInitChargeCloudCmd->SetUnitCategory("Length");
+	fInitChargeCloudCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+
+	fCorrChargeCloudCmd = new G4UIcmdWithADouble("/digitizer/cccorrection", this);
+	fCorrChargeCloudCmd->SetGuidance("Charge cloud sigma correction factor");
+	fCorrChargeCloudCmd->SetParameterName("choice", true);
+	fCorrChargeCloudCmd->SetDefaultValue(1.);
+	fCorrChargeCloudCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
 }
 
 DigitizerMessenger::~DigitizerMessenger()
@@ -49,6 +62,8 @@ DigitizerMessenger::~DigitizerMessenger()
 	delete fNoiseCmd;
 	delete fBiasCmd;
 	delete fTemperatureCmd;
+	delete fInitChargeCloudCmd;
+	delete fCorrChargeCloudCmd;
 	delete fDriftDirectionCmd;
 }
 
@@ -58,13 +73,19 @@ void DigitizerMessenger::SetNewValue(G4UIcommand * command, G4String newValue)
 		fDigitizer->SetThreshold(fThresholdCmd->GetNewIntValue(newValue));
 	}
 	if (command == fNoiseCmd) {
-		fDigitizer->SetThreshold(fThresholdCmd->GetNewIntValue(newValue));
+		fDigitizer->SetNoise(fThresholdCmd->GetNewIntValue(newValue));
 	}
 	if (command == fBiasCmd) {
 		fDigitizer->SetBias(fBiasCmd->GetNewDoubleValue(newValue));
 	}
 	if (command == fTemperatureCmd) {
 		fDigitizer->SetTemperature(fTemperatureCmd->GetNewDoubleValue(newValue));
+	}
+	if (command == fInitChargeCloudCmd) {
+		fDigitizer->SetInitChargeCloudSigma(fInitChargeCloudCmd->GetNewDoubleValue(newValue));
+	}
+	if (command == fCorrChargeCloudCmd) {
+		fDigitizer->SetChargeCloudSigmaCorrection(fCorrChargeCloudCmd->GetNewDoubleValue(newValue));
 	}
 	if (command == fDriftDirectionCmd) {
 		if (fDriftDirectionCmd->GetNewIntValue(newValue) > 0)
