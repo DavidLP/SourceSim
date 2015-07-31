@@ -12,15 +12,15 @@ from pybar.analysis.analyze_raw_data import AnalyzeRawData
 import pybar.scans.analyze_source_scan_tdc_data as tdc_analysis
 
 def analyze_hits(input_file_hits):
-        with AnalyzeRawData(raw_data_file=None, analyzed_data_file=input_file_hits) as analyze_raw_data:
-            analyze_raw_data.create_source_scan_hist = True
-            analyze_raw_data.create_cluster_hit_table = True
-            analyze_raw_data.create_cluster_table = True
-            analyze_raw_data.create_cluster_size_hist = True
-            analyze_raw_data.create_cluster_tot_hist = True
-            analyze_raw_data.create_tdc_hist = True
-            analyze_raw_data.analyze_hit_table(analyzed_data_out_file=input_file_hits[:-3] + '_analyzed.h5')
-            analyze_raw_data.plot_histograms(pdf_filename=input_file_hits[:-3], analyzed_data_file=input_file_hits[:-3] + '_analyzed.h5')
+    with AnalyzeRawData(raw_data_file=None, analyzed_data_file=input_file_hits) as analyze_raw_data:
+        analyze_raw_data.create_source_scan_hist = True
+        analyze_raw_data.create_cluster_hit_table = True
+        analyze_raw_data.create_cluster_table = True
+        analyze_raw_data.create_cluster_size_hist = True
+        analyze_raw_data.create_cluster_tot_hist = True
+        analyze_raw_data.create_tdc_hist = True
+        analyze_raw_data.analyze_hit_table(analyzed_data_out_file=input_file_hits[:-3] + '_analyzed.h5')
+        analyze_raw_data.plot_histograms(pdf_filename=input_file_hits[:-3], analyzed_data_file=input_file_hits[:-3] + '_analyzed.h5')
 
 def analyze_tdc(hit_file, calibration_filename=None, col_span=[5, 75], row_span=[10, 320]):
     # Data files
