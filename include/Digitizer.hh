@@ -21,6 +21,8 @@ class Digitizer: public G4VDigitizerModule {
 		void SetBias(const G4double&);  // sensor bias [V]
 		void SetTemperature(const G4double&);  // sensor temperatur [K]
 		void SetSensorZdirection(const bool&);  // electron z-drift direction, always towards readout electrode; false: in z-direction
+		void SetInitChargeCloudSigma(const G4double&); // the initial spacing of the charge cloud sigma [um]
+		void SetChargeCloudSigmaCorrection(const G4double&); // the initial spacing of the charge cloud sigma [um]
 
 		void PrintSettings();
 
@@ -31,7 +33,7 @@ class Digitizer: public G4VDigitizerModule {
 		double CalcChargeFraction(const double& x, const double& y, const double& z, const double& x_pitch, const double& y_pitch, const double& voltage, const int& x_pixel_offset, const int& y_pixel_offset, const double& temperature);
 		double CalcSigmaDiffusion(const double& length, const double& voltage, const double& temperature);
 		double CalcBivarianteNormalCDFWithLimits(const double& a1, const double& a2, const double& b1, const double& b2, const double& mu1, const double& mu2, const double& sigma);
-
+		double CalcZfromSigma(const double& z);
 		//Digitization settings
 		bool fCalcChargeCloud;
 
@@ -42,8 +44,10 @@ class Digitizer: public G4VDigitizerModule {
 		G4int fNoise;  // gaussian noise sigma [e]
 		G4double fTemperatur;  // [Kelvin]
 		G4double fBias;  // sensor bias votlage [V]
+		G4double fSigma0; // initial charge cloud sigma [um]
+		G4double fSigmaCC; // correction factor for charge cloud sigma
 
-		//Constant variables that cannot be changed yet between runs
+		//Constant variables that cannot be changed yet between runs, yet
 		G4double fSensorThickness;  // [um]
 		G4double fPixelPitchX;  // [um]
 		G4double fPixelPitchY;  // [um]
