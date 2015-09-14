@@ -25,9 +25,9 @@ Digitizer::Digitizer(G4String name) :
 		G4VDigitizerModule(name), fCalcChargeCloud(true), fReadOutDirection(true), fEnergyPerCharge(3.74), fThreshold(2000),  // std. IBL detector
 		fNoise(130),  // std. IBL detector
 		fTemperatur(330),  // 56.8 C (uncooled 50-60 is common)
-		fBias(60.),  // bias of the sensor in volt
-		fSigma0(2.*um), // initial charge cloud gaussian profile sigma
-		fSigmaCC(1.3), // correction factor for charge cloud sigma to take into account diffusion + repulsion
+		fBias(80.),  // bias of the sensor in volt
+		fSigma0(3.*um), // initial charge cloud gaussian profile sigma
+		fSigmaCC(1.35), // correction factor for charge cloud sigma(z) to take into account also repulsion
 		fTriggerHits(false),  // trigger: create digits only if trigger volume is hit
 		fPixelDigitsCollection(0),
 		fTriggerHCID(-1)
@@ -277,6 +277,7 @@ void Digitizer::PrintSettings()
 	G4cout << "    Row width\t" << G4BestUnit(fPixelPitchY, "Length") << G4endl;
 	G4cout << "    Threshold\t" << fThreshold << G4endl;
 	G4cout << "    Noise\t" << fNoise << G4endl;
+	G4cout << "    Trigger\t" << fTriggerHits << G4endl;
 }
 
 void Digitizer::SetEnergyPerCharge(const G4double& energyPerCharge)
