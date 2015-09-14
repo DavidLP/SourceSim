@@ -27,7 +27,7 @@ class PhysicsList: public G4VModularPhysicsList {
 		void SetDetectorCut(G4double val);
 
 	private:
-
+		void SetCuts();
 
 		void AddExtraBuilders(G4bool flagHP);
 		void DeleteHadronPhysics();
