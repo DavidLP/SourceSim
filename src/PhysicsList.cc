@@ -37,17 +37,17 @@
 
 PhysicsList::PhysicsList():G4VModularPhysicsList(),
 		  fPMessenger(0),
-		  fCutForGamma(10. * um),
-		  fCutForElectron(10. * um),
-		  fCutForPositron(10. * um),
+		  fCutForGamma(1. * um),
+		  fCutForElectron(1. * um),
+		  fCutForPositron(1. * um),
 		  fDetectorCuts(0),
 		  fTargetCuts(0)
 {
 	G4LossTableManager::Instance();
-	defaultCutValue = 10. * um;
+	defaultCutValue = 1. * um;
 
 	fPMessenger = new PhysicsListMessenger(this);
-
+	SetCuts();
 	SetVerboseLevel(0);
 }
 
@@ -140,12 +140,12 @@ void PhysicsList::AddExtraBuilders(G4bool flagHP)
 	ReplacePhysics(new G4NeutronTrackingCut(verboseLevel));
 }
 
-//void PhysicsList::SetCuts()
-//{
-////	SetCutsWithDefault();
-//	SetCutValue(fCutForGamma, "gamma");
-//	SetCutValue(fCutForElectron, "e-");
-//	SetCutValue(fCutForPositron, "e+");
+void PhysicsList::SetCuts()
+{
+	SetCutsWithDefault();
+	SetCutValue(fCutForGamma, "gamma");
+	SetCutValue(fCutForElectron, "e-");
+	SetCutValue(fCutForPositron, "e+");
 //	G4cout << "!!! world cuts are set" << G4endl;
 //
 ////	if (!fTargetCuts)
@@ -162,7 +162,7 @@ void PhysicsList::AddExtraBuilders(G4bool flagHP)
 //
 //	if (verboseLevel > 0)
 //		DumpCutValuesTable();
-//}
+}
 
 void PhysicsList::SetCutForGamma(G4double cut)
 {
