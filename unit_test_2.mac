@@ -9,7 +9,8 @@
 #
 /setup/sensor/material G4_Si      
 /setup/sensor/thickness 530 um
-/setup/sensor/xy 1 cm
+/setup/sensor/x 1 cm
+/setup/sensor/y 1 cm
 /setup/sourceshield/enable 0
 /setup/shield/enable 0
 /setup/collimator/enable 0
