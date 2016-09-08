@@ -1,4 +1,4 @@
-"""This script converts a hdf5 table into a CERN ROOT Ttree.
+"""This script converts a ROOT tree with Fe data to a hdf5 hit table in pyBAR format.
 """
 import tables as tb
 import numpy as np
@@ -14,7 +14,7 @@ from multiprocessing import Pool
 
 import ROOT as r
 from pybar.fei4 import register_utils
-from pybar.analysis.RawDataConverter import data_struct
+from pybar_fei4_interpreter import data_struct
 
 
 def get_charge_calibration(tdc_calibation_file, plsr_dac_calibation_file):
@@ -81,6 +81,7 @@ def create_hit_table(input_file_name, tdc_calibation_file, plsr_dac_calibation_f
                 tdc_interpolation = interp1d(x=charge_calibration_values, y=tdc_calibration[actual_data['column'], actual_data['row']], kind='slinear', bounds_error=False, fill_value=-1)
                 tdc_error_interpolation = interp1d(x=charge_calibration_values, y=tdc_error[actual_data['column'], actual_data['row']], kind='slinear', bounds_error=False, fill_value=1)
                 tdc = tdc_interpolation(actual_data['charge'])[0][0]
+                
 #                 if tdc >= 0:
 #                     tdc_e = np.abs(tdc_error_interpolation(actual_data['charge'])[0][0])
 #                     if tdc_e > 0:
@@ -105,6 +106,11 @@ def create_hit_table(input_file_name, tdc_calibation_file, plsr_dac_calibation_f
                     else:  # below threshold thus no calibration, do not add hit
                         print 'WARNING: Should never trigger!'
                         return table_index
+                
+                tdc = actual_data['charge'] / 10.  # set charge in electrons, for debugging
+                if tdc > 4095:
+                    hits[table_index]['event_status'] |= 0b0000010100000000
+                    tdc = 4095
 
                 hits[table_index]['event_status'] |= 0b0000000100000000  # set TDC and trigger word
                 hits[table_index]['event_number'] = actual_data['event'][0].astype(np.int64)
@@ -205,14 +211,14 @@ if __name__ == "__main__":
     def _function_wrapper_create_hit_table(input_file_name):  # needed for multiprocessing call with arguments
         return create_hit_table(input_file_name, tdc_calibation_file, plsr_dac_calibation_file)
      
-#     # Multiprocessing for serveral runs
-#     pool = Pool()  # let all cores work the array
-#     pool.map(_function_wrapper_create_hit_table, input_file_names.values())
-#     pool.close()
-#     pool.join()
+    # Multiprocessing for serveral runs
+    pool = Pool()  # let all cores work the array
+    pool.map(_function_wrapper_create_hit_table, input_file_names.values())
+    pool.close()
+    pool.join()
     
     #create_hit_table(input_file_names.values()[0], tdc_calibation_file, plsr_dac_calibation_file)
-    tdcana.analyze_hits(r'/media/davidlp/Data/simulation/threshold_4000_interpreted.h5')
+    #tdcana.analyze_hits(r'/media/davidlp/Data/simulation/threshold_4000_interpreted.h5')
 
 
 #     with tb.openFile(tdc_calibation_file, mode="r") as in_file_calibration_h5:
