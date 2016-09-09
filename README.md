@@ -1,4 +1,4 @@
-A program to ionizing particles from a radioactive source (e.g. SR-90, Am-241, electron beam) interacting with pixel sensors. Shielding and triggering can be simulated and the setup (e.g. geometry, materials) can be easily changed.
+A program to simulate ionizing particles from a radioactive source (e.g. SR-90, Am-241, electron beam) interacting with pixel sensors. Shielding and triggering can be simulated and the setup (e.g. geometry, materials) can be easily changed.
 
 The program uses the GEANT4 framework. 
 The corresponding GEANT4 license can be found here:
