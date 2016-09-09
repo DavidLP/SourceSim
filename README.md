@@ -18,4 +18,4 @@ Usage:
    make
    ```
    
-3. Run SourceSim: ``` . SourceSim-build\SourceSim ```
+3. Run SourceSim: ``` ./SourceSim-build/SourceSim ```
