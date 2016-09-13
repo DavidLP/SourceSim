@@ -11,6 +11,7 @@ class G4VPhysicalVolume;
 class G4GlobalMagFieldMessenger;
 class DetectorMessenger;
 class G4MultiFunctionalDetector;
+class G4UserLimits;
 
 class DetectorConstruction: public G4VUserDetectorConstruction {
 	public:
@@ -86,6 +87,7 @@ class DetectorConstruction: public G4VUserDetectorConstruction {
 		G4Box* fSolidSensor;
 		G4LogicalVolume* fLogicSensor;
 		G4VPhysicalVolume* fPhysSensor;
+		G4UserLimits* fStepLimit;  // pointer to user step limits
 
 		G4Material* fTriggerMaterial;
 		G4Box* fSolidTrigger;

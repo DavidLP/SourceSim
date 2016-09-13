@@ -34,18 +34,22 @@
 #include "Trigger.hh"
 #include "DetectorMessenger.hh"
 
+#include "G4UserLimits.hh"
+
 
 // Std. sensor geometry, IBL sensor
 const G4double X = 20.45 * mm;  // total sensor tile x dimension (column)
 const G4double Y = 18.59 * mm;  // total sensor tile y dimension (row)
-const G4double thickness = 200 * um;
+const G4double thickness = 204 * um;
+
+const G4double maxStepInDet = 5 * um;
 
 
 G4ThreadLocal G4GlobalMagFieldMessenger* DetectorConstruction::fMagFieldMessenger = 0;
 
 DetectorConstruction::DetectorConstruction() :
 		G4VUserDetectorConstruction(), fCheckOverlaps(true), fWorldMaterial(0), fSolidWorld(0), fLogicWorld(0), fPhysWorld(0), fSensorMaterial(0), fSolidSensor(
-				0), fLogicSensor(0), fPhysSensor(0), fTriggerMaterial(0), fSolidTrigger(0), fLogicTrigger(0), fPhysTrigger(0), fSourceShieldMaterial(0), fSolidSourceShield(
+				0), fLogicSensor(0), fPhysSensor(0), fStepLimit(0), fTriggerMaterial(0), fSolidTrigger(0), fLogicTrigger(0), fPhysTrigger(0), fSourceShieldMaterial(0), fSolidSourceShield(
 				0), fLogicSourceShield(0), fPhysSourceShield(0), fShieldMaterial(0), fSolidShield(0), fLogicShield(0), fPhysShield(0), fCollMaterialInner(0), fCollMaterialOuter(
 				0), fSolidCollOuter(0), fSolidCollInner(0), fLogicCollInner(0), fLogicCollOuter(0), fPhysCollInner(0), fPhysCollOuter(0), fDetectorMessenger(0)
 
@@ -58,6 +62,7 @@ DetectorConstruction::DetectorConstruction() :
 
 DetectorConstruction::~DetectorConstruction()
 {
+	delete fStepLimit;
 	delete fDetectorMessenger;
 }
 
@@ -89,6 +94,10 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 	// Sensor
 	fSolidSensor = new G4Box("Sensor", X / 2., Y / 2., thickness / 2.);
 	fLogicSensor = new G4LogicalVolume(fSolidSensor, fSensorMaterial, "Sensor");
+
+	fStepLimit = new G4UserLimits(maxStepInDet);
+	fLogicSensor->SetUserLimits(fStepLimit);
+
 	fPhysSensor = new G4PVPlacement(0,//no rotation
 			G4ThreeVector(0, 0, 0),//std. position
 			fLogicSensor,//its logical volume

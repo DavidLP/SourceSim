@@ -32,6 +32,8 @@
 #include "G4IonBinaryCascadePhysics.hh"
 #include "G4NeutronTrackingCut.hh"
 #include "G4DecayPhysics.hh"
+#include "G4StepLimiterPhysics.hh"
+
 
 #include "G4SystemOfUnits.hh"
 
@@ -92,7 +94,7 @@ void PhysicsList::SelectElectromagneticPhysics(const G4String& name)
 	if (verboseLevel > 0) {
 		G4cout << "PhysicsList::SelectElectromagneticPhysics: <" << name << ">" << G4endl;
 	}
-
+	ReplacePhysics(new G4StepLimiterPhysics(verboseLevel));  // To allow step size reduction in sensor
 	if (name == "emlivermore")
 		ReplacePhysics(new G4EmLivermorePhysics(verboseLevel));
 	else if (name == "empenelope")
