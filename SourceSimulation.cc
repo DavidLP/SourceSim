@@ -95,7 +95,7 @@ int main(int argc,char** argv)
 
 	// Set physics list for both worlds
 	PhysicsList* physicsList = new PhysicsList();
-    physicsList->RegisterPhysics(new G4ParallelWorldPhysics(parallelWorldName));  // parallel world physic has to be called FIRDT
+    physicsList->RegisterPhysics(new G4ParallelWorldPhysics(parallelWorldName));  // parallel world physic has to be called FIRST
     physicsList->InitStdPhysics();  // material world physics set here (AFTER parallel world physics, otherwise wrong results... BAD framework implementation ...)
     runManager->SetUserInitialization(physicsList);
 
@@ -112,10 +112,9 @@ int main(int argc,char** argv)
 	else  {  // std. mode initialize viewer
 		G4UIExecutive* ui = new G4UIExecutive(argc, argv, session);
 		UImanager->ApplyCommand("/control/execute init.mac");  // run init script
-		// BUG: the following can only be called from interface, was working in older GEANT versions...
-		//    UImanager->ApplyCommand("/control/execute vis.mac");  // run vis script
-		//    if (ui->IsGUI())
-		//    	UImanager->ApplyCommand("/control/execute gui.mac");  // run gui setup script
+		UImanager->ApplyCommand("/control/execute vis.mac");  // run vis script
+		if (ui->IsGUI())
+			UImanager->ApplyCommand("/control/execute gui.mac");  // run gui setup script
 		ui->SessionStart();
 		delete ui;
 	}
