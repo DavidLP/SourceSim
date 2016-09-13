@@ -22,7 +22,9 @@ class PixelDetectorSD: public G4VSensitiveDetector
 		virtual void EndOfEvent(G4HCofThisEvent* hitCollection);
 
 	private:
+		bool AddHit(G4double& edep, G4double& dl, G4int& volumeIDx, G4int& volumeIDy, G4ThreeVector& position, G4String& particle);
 		DetHitsMap* fHitsMap;
+		std::map<G4int, DetHit*>::iterator it_start;
 };
 
 #endif

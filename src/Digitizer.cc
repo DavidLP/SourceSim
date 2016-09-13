@@ -22,13 +22,17 @@
 #include "PixelROWorld.hh"
 
 Digitizer::Digitizer(G4String name) :
-		G4VDigitizerModule(name), fCalcChargeCloud(true), fReadOutDirection(true), fEnergyPerCharge(3.74), fThreshold(2000),  // std. IBL detector
+		G4VDigitizerModule(name),
+		fCalcChargeCloud(true),  // distribute charge on neigbouring pixels due to charge cloud
+		fReadOutDirection(true), // True: sensor followed by readout in beam direction
+		fEnergyPerCharge(3.78), // Physical Review, Vol 140, Number 6a, 1965 for ~ 330 K extrapolated
+		fThreshold(2000),  // std. IBL detector
 		fNoise(130),  // std. IBL detector
 		fTemperatur(330),  // 56.8 C (uncooled 50-60 is common)
 		fBias(80.),  // bias of the sensor in volt
 		fSigma0(3.*um), // initial charge cloud gaussian profile sigma
 		fSigmaCC(1.35), // correction factor for charge cloud sigma(z) to take into account also repulsion
-		fTriggerHits(false),  // trigger: create digits only if trigger volume is hit
+		fTriggerHits(true),  // trigger: create digits only if trigger volume is hit
 		fPixelDigitsCollection(0),
 		fTriggerHCID(-1)
 {
@@ -106,6 +110,8 @@ void Digitizer::AddHitToDigits(std::map<G4int, DetHit*>::const_iterator iHit, Pi
 	G4int row = iHit->second->GetVolumeIdY();
 	G4double charge = iHit->second->GetEdep() / fEnergyPerCharge / eV;  // charge in electrons
 	G4ThreeVector position = iHit->second->GetPosition();  // are negative in z or not?
+
+//	std::cout<<"\nADD HIT: "<<column<<"/"<<row<<std::endl;
 
 	if (fCalcChargeCloud) {  // distribute the deposited charge into neighboring pixels
 		// temporary variables
