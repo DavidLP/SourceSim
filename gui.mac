@@ -1,4 +1,4 @@
-# Add icons of general interest
+# Add icons to steer simulation
 #
 /control/execute icons.mac
 #
@@ -9,6 +9,7 @@
 # Run menu :
 /gui/addMenu run Run
 /gui/addButton run "Init" "/run/initialize"
+/gui/addButton run "10 events" "/run/beamOn 10"
 /gui/addButton run "1e4 events" "/run/beamOn 10000"
 /gui/addButton run "1e5 events" "/run/beamOn 100000"
 /gui/addButton run "1e6 events" "/run/beamOn 1000000"

@@ -1,4 +1,4 @@
-# Init
+# Initialize simulation by setting result histograms and verbosity
 /control/verbose 0
 /control/saveHistory
 /run/verbose 0
@@ -24,7 +24,3 @@
 /analysis/h1/set 10 120 0 30 deg	#Sensor track Out angle
 /analysis/h1/set 11 100 0 200 keV	#Sensor energy deposit (triggered)
 /analysis/h1/set 12 100 0 1 keV/um	#Sensor dE/dx
-
-
-#/control/execute vis.mac
-#/control/execute gui.mac
