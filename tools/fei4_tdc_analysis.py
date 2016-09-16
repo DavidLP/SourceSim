@@ -22,7 +22,7 @@ def analyze_hits(input_file_hits):
         analyze_raw_data.analyze_hit_table(analyzed_data_out_file=input_file_hits[:-3] + '_analyzed.h5')
         analyze_raw_data.plot_histograms(pdf_filename=input_file_hits[:-3], analyzed_data_file=input_file_hits[:-3] + '_analyzed.h5')
 
-def analyze_tdc(hit_file, calibration_filename=None, col_span=[5, 75], row_span=[10, 320]):
+def analyze_tdc(hit_file, calibation_file, col_span=[5, 75], row_span=[10, 320]):
     # Data files
     hit_cut_file = hit_file[:-3] + '_cut_hits.h5'
     hit_cut_analyzed_file = hit_file[:-3] + '_cut_hits_analyzed.h5'
@@ -32,18 +32,24 @@ def analyze_tdc(hit_file, calibration_filename=None, col_span=[5, 75], row_span=
     event_status_select_mask = 0b0000111111111111
     event_status_condition = 0b0000000100000000  # trigger, tdc word and perfect event structure required
 
-    tdc_analysis.histogram_tdc_hits(hit_file, hit_selection_conditions, event_status_select_mask, event_status_condition, calibration_filename, max_tdc=1500, n_bins=1000)
-
+    tdc_analysis.histogram_tdc_hits(input_file_hits=hit_file, 
+                                    hit_selection_conditions=hit_selection_conditions, 
+                                    event_status_select_mask=event_status_select_mask, 
+                                    event_status_condition=event_status_condition, 
+                                    calibration_file=calibation_file, 
+                                    max_tdc=1500, 
+                                    n_bins=1000)
 
 if __name__ == "__main__":
-    arguments = sys.argv
-    if len(arguments) < 2:
-        print 'Please provide the base file name of the root data files (e.g. threshold_ for threshold_2000.root)'
-        raise SystemExit
-     
-    base_file_name = arguments[1]
+#     arguments = sys.argv
+#     if len(arguments) < 2:
+#         print 'Please provide the base file name of the root data files (e.g. threshold_ for threshold_2000.root)'
+#         raise SystemExit
+#      
+#     base_file_name = arguments[1]
+    base_file_name = '/media/documents/GEANT4/SourceSim-build/cc_'
 
-    calibration_filename = r'/home/davidlp/geant4/SourceSim-build/converter/calibration_data/hit_or_calibration_calibration.h5'
+    calibation_file = r'/home/davidlp/git/Thesis/Analysis/Simulation/Landau/GEANT4/ChargeCloud/data/18_proto_7_hit_or_calibration_calibration.h5'
     file_names = glob.glob(base_file_name + '*_interpreted.h5')
     file_names.sort()
    
@@ -54,4 +60,4 @@ if __name__ == "__main__":
     file_names.sort()
  
     for file_name in file_names:
-        analyze_tdc(file_name, calibration_filename)
+        analyze_tdc(file_name, calibation_file)
