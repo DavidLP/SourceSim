@@ -26,6 +26,17 @@ set(SOURCESIMULATION_SCRIPTS
   run.mac
   Sr_90_energy.dat
   Sr_90_1mmShield_energy.dat
+  source_fast.mac
+  source.mac
+  Fe_55_energy.dat
+  Cu_fluorescence_energy.dat
+  Ag_fluorescence_energy.dat
+  Mo_fluorescence_energy.dat
+  Rb_fluorescence_energy.dat
+  Cd_109_energy.dat
+  Ba_fluorescence_energy.dat
+  Tb_fluorescence_energy.dat
+  Am_241_energy.dat
   )
 foreach(_script ${SOURCESIMULATION_SCRIPTS})
   configure_file(
