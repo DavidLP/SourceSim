@@ -35,13 +35,21 @@ class Digitizer: public G4VDigitizerModule {
 		double CalcChargeFraction(const double& x, const double& y, const double& z, const double& x_pitch, const double& y_pitch, const double& voltage, const int& x_pixel_offset, const int& y_pixel_offset, const double& temperature);
 		double CalcSigmaDiffusion(const double& length, const double& voltage, const double& temperature);
 		double CalcBivarianteNormalCDFWithLimits(const double& a1, const double& a2, const double& b1, const double& b2, const double& mu1, const double& mu2, const double& sigma);
-		double CalcZfromSigma(const double& z);
+		double CalcZfromSigma(const double& z, const double& sigma);
+
+		double coth(const double& x);
+		double getGapEnergy(const double& temperature);
+		double getEHenergy(const double& temperature);
+		double getEHenergyElectrons(const double& temperature);
+		double getEHenergyPhotons(const double& temperature);
+		double getSigmaPhotons(const double& energy);
 		//Digitization settings
 		bool fCalcChargeCloud;
 
 		//Digitization parameters
 		bool fReadOutDirection; // false: readout side more towards z (behind sensor)
-		G4double fEnergyPerCharge;  // charge per e-h pair
+		G4double fEHPerChargeElectrons;  // charge per e-h pair for electrons
+		G4double fEHPerChargePhotons;  // charge per e-h pair for photons
 		G4int fThreshold;  // detection thresholdl [e]
 		G4int fNoise;  // gaussian noise sigma [e]
 		G4double fTemperatur;  // [Kelvin]
