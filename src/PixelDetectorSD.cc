@@ -28,7 +28,7 @@ PixelDetectorSD::~PixelDetectorSD()
 {
 }
 
-void PixelDetectorSD::Initialize(G4HCofThisEvent* hitCollection)
+void PixelDetectorSD::Initialize(G4HCofThisEvent* hitCollection)  // This method is invoked at the beginning of each event
 {
 	// Create hits collection
 	fHitsMap = new DetHitsMap(SensitiveDetectorName, collectionName[0]);
@@ -84,55 +84,12 @@ G4bool PixelDetectorSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 		}
 	}
 	else{
-		// To increase the charge sharing simulation precision create artificial hits along along step
-//		if (stepLength > cMaxStepLength * um){
-//			G4int nSteps = stepLength / (cMaxStepLength * um);
-//			G4ThreeVector dxyz = (postStepPosition - preStepPosition) / G4double(nSteps);
-////			G4cout << G4endl<< "--------> Big step sub divided into " << nSteps << " steps " << G4endl;
-////			G4cout << G4endl<< "--------> Prestep " << preStepPosition << G4endl;
-////			G4cout << G4endl<< "--------> Poststep " << postStepPosition << G4endl;
-////			G4cout << G4endl<< "--------> dxyz " << dxyz << G4endl;
-//
-//			for (auto i=0; i<nSteps; ++i){
-//				G4cout << G4endl<< "----------> position " << preStepPosition + i * dxyz<< G4endl;
-//				if (AddHit(edep, stepLength, volumeIDx, volumeIDy, preStepPosition + i * dxyz, particle) == false){
-//					G4ExceptionDescription msg;
-//					msg << "More than " << cMaxHits << " hits per event. Buffer too small.";
-//					G4Exception("PixelDetectorSD", "Cannot store all hits.", EventMustBeAborted, msg);
-//				}
-//			}
-//
-//
-//		}
-//		else{
-			if (AddHit(edep, stepLength, volumeIDx, volumeIDy, preStepPosition, particle) == false){
-				G4ExceptionDescription msg;
-				msg << "More than " << cMaxHits << " hits per event. Buffer too small.";
-				G4Exception("PixelDetectorSD", "Cannot store all hits.", EventMustBeAborted, msg);
-			}
-//		}
+		if (AddHit(edep, stepLength, volumeIDx, volumeIDy, preStepPosition, particle) == false){  // charged particle interaction at pre step point
+			G4ExceptionDescription msg;
+			msg << "More than " << cMaxHits << " hits per event. Buffer too small.";
+			G4Exception("PixelDetectorSD", "Cannot store all hits.", EventMustBeAborted, msg);
+		}
 	}
-
-//	for (std::map<G4int, DetHit*>::iterator it = fHitsMap->GetMap()->begin(); it != fHitsMap->GetMap()->end(); ++it){
-//		//	Per pixel steps accumulation would correspond to a simple digitization. Digitization should be independent thus no "per pixel histograming" here
-//		//  Create new hit from each step info
-//		if (it->second->GetVolumeIdX() == -1){  // Initialized to -1 thus not set
-//			it->second->SetVolumeIdX(touchable->GetReplicaNumber(1));  // column
-//			it->second->SetVolumeIdY(touchable->GetReplicaNumber(0));  // row
-//			it->second->Add(edep, stepLength);
-//			if (step->GetTrack()->GetParticleDefinition()->GetParticleName() == "gamma"){  // gamma interaction seems to takes place as a post step process, attenuation result is checked and correct
-//				it->second->SetPosition(postStepPosition);
-//			}
-//			else{ // not too sure what to do with electrons / protons; so I assume charge is created at the beginning of the step
-//				it->second->SetPosition(preStepPosition);
-//				std::cout<<"\nHIT PRESTEP: "<<preStepPosition<<std::endl;
-//				std::cout<<"\nHIT POSTSTEP: "<<postStepPosition<<std::endl;
-//				std::cout<<"\nHIT STEPLENGTH: " << G4BestUnit(stepLength, "Length") <<std::endl;
-//			}
-//			it->second->SetParticle(step->GetTrack()->GetParticleDefinition()->GetParticleName());
-//			break;  // break because only one hit from step can be added ?
-//		}
-//	}
 
 	return true;
 }
