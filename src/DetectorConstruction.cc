@@ -40,9 +40,9 @@
 // Std. sensor geometry, IBL sensor
 const G4double X = 20.45 * mm;  // total sensor tile x dimension (column)
 const G4double Y = 18.59 * mm;  // total sensor tile y dimension (row)
-const G4double thickness = 204 * um;
+const G4double thickness = 200 * um; //204 * um;
 
-const G4double maxStepInDet = 5 * um;
+const G4double maxStepInDet = 5 * um;  // Maximum  step size in sensor
 
 
 G4ThreadLocal G4GlobalMagFieldMessenger* DetectorConstruction::fMagFieldMessenger = 0;

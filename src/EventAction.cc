@@ -119,8 +119,14 @@ void EventAction::EndOfEventAction(const G4Event* event)
 
 	if (fTriggerHCID != -1) {
 		G4THitsMap<G4double>* hcTrigger = GetHitsCollection(fTriggerHCID, event);
-		if (hcTrigger->GetSize() > 0)  // there is at least one hit in the trigger volume
-			analysisManager->FillH1(11, edep);
+		if (hcTrigger->GetSize() > 0){  // there is at least one hit in the trigger volume
+			if (fSensorEdepHCID != -1)
+				analysisManager->FillH1(11, edep);
+			if (fSensorTrackLengthHCID != -1)
+				analysisManager->FillH1(13, trackLength);
+			if (trackLength > 0. && fSensorEdepHCID != -1 && fSensorTrackLengthHCID != -1)
+				analysisManager->FillH1(14, edep / trackLength);
+		}
 	}
 
 	if (fShieldInHCID != -1) {
