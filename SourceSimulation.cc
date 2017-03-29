@@ -111,10 +111,11 @@ int main(int argc,char** argv)
 	}
 	else  {  // std. mode initialize viewer
 		G4UIExecutive* ui = new G4UIExecutive(argc, argv, session);
-		UImanager->ApplyCommand("/control/execute init.mac");  // run init script
+		// Leads to core dump on some systems and has to be typed manually
+		/*UImanager->ApplyCommand("/control/execute init.mac");  // run init script
 		UImanager->ApplyCommand("/control/execute vis.mac");  // run vis script
 		if (ui->IsGUI())
-			UImanager->ApplyCommand("/control/execute gui.mac");  // run gui setup script
+			UImanager->ApplyCommand("/control/execute gui.mac");  // run gui setup script*/
 		ui->SessionStart();
 		delete ui;
 	}
