@@ -119,7 +119,7 @@ void EventAction::EndOfEventAction(const G4Event* event)
 
 	if (fTriggerHCID != -1) {
 		G4THitsMap<G4double>* hcTrigger = GetHitsCollection(fTriggerHCID, event);
-		if (hcTrigger->GetSize() > 0){  // there is at least one hit in the trigger volume
+		if (hcTrigger->GetSize() > 0) {  // there is at least one hit in the trigger volume
 			if (fSensorEdepHCID != -1)
 				analysisManager->FillH1(11, edep);
 			if (fSensorTrackLengthHCID != -1)
@@ -139,6 +139,28 @@ void EventAction::EndOfEventAction(const G4Event* event)
 		G4THitsMap<G4double>* hcOutEnergy = GetHitsCollection(fShieldOutHCID, event);
 		for (std::map<G4int, G4double*>::iterator it = hcOutEnergy->GetMap()->begin(); it != hcOutEnergy->GetMap()->end(); ++it)
 			analysisManager->FillH1(6, *(it->second));
+	}
+
+	// Add energy deposited for back scattered, stuck and forward scattered particles
+	if (fSensorEdepHCID != -1) {
+		G4THitsMap<G4double>* hcEloss = GetHitsCollection(fSensorEdepHCID, event);
+		edep = GetSum(hcEloss);
+		if (fSensorTrackAngleOutHCID != -1){
+			G4THitsMap<G4double>* hcOutAngle = GetHitsCollection(fSensorTrackAngleOutHCID, event);
+			if (hcOutAngle->GetMap()->size() < 2){  // More than one track angle is not supported here
+				if (hcOutAngle->GetMap()->size() == 0){  // Stuck particle
+					analysisManager->FillH1(16, edep);
+				}
+				else if (GetSum(hcOutAngle) * CLHEP::rad > -CLHEP::pi / 2. && GetSum(hcOutAngle) * CLHEP::rad < CLHEP::pi / 2.){  // forward
+					analysisManager->FillH1(17, edep);
+//					if (edep < 20 * CLHEP::keV)
+//						G4cout<<"FORWARD LOW ENERGY "<<G4BestUnit(GetSum(hcOutAngle), "Angle")<<" "<<GetSum(hcOutAngle)<<G4endl;
+				}
+				else if (GetSum(hcOutAngle) * CLHEP::rad < -CLHEP::pi / 2. || GetSum(hcOutAngle) * CLHEP::rad > CLHEP::pi / 2.){  // backward
+					analysisManager->FillH1(15, edep);
+				}
+			}
+		}
 	}
 
 	G4int eventID = event->GetEventID();
@@ -180,10 +202,10 @@ void EventAction::EndOfEventAction(const G4Event* event)
 				G4Exception("EventAction::EndOfEventAction", "Cannot access pixel digits", FatalException, "");
 		}
 		else
-		G4Exception("EventAction::EndOfEventAction", "Cannot access pixel digits", FatalException, "");
+			G4Exception("EventAction::EndOfEventAction", "Cannot access pixel digits", FatalException, "");
 	}
 	else
-	G4Exception("EventAction::EndOfEventAction", "Cannot find digitization module.", JustWarning, "");
+		G4Exception("EventAction::EndOfEventAction", "Cannot find digitization module.", JustWarning, "");
 
 //print per event (modulo n)
 	G4int printModulo = G4RunManager::GetRunManager()->GetPrintProgress();

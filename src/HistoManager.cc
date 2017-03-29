@@ -26,7 +26,7 @@ void HistoManager::book()
 	analysisManager->SetActivation(true); // enable inactivation of histograms
 
 	// Define histograms start values
-	const G4int kMaxHisto = 15;
+	const G4int kMaxHisto = 18;
 	const G4String id[] =
 		{ "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25",
 				"26", "27", "28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49" };
@@ -46,7 +46,10 @@ void HistoManager::book()
 				"Sensor energy deposit (triggered)", //11
 				"Sensor dE/dx", //12
 				"Sensor track length (triggered)", //13
-				"Sensor dE/dx (triggered)" //14
+				"Sensor dE/dx (triggered)", //14
+				"Sensor energy deposit (backscattered)", //15
+				"Sensor energy deposit (stuck)", //16
+				"Sensor energy deposit (forward)" //17
 			};
 
 	dataType.push_back("Energy"); //0
@@ -64,6 +67,10 @@ void HistoManager::book()
 	dataType.push_back("dedx"); //12
 	dataType.push_back("Length"); //13
 	dataType.push_back("dedx"); //14
+
+	dataType.push_back("Energy"); //15
+	dataType.push_back("Energy"); //16
+	dataType.push_back("Energy"); //17
 
 	// Default values (to be reset via /analysis/h1/set command)
 	G4int nbins = 100;
