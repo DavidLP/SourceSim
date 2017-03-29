@@ -100,7 +100,7 @@ void Digitizer::Digitize()
 		G4Exception("Digitizer::Digitize()",
 				"Cannot access pixel hits collection", FatalException, "");
 
-//	std::cout<<"\nEVENT: "<<G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID()<<std::endl;
+//	std::cout<<"\nEVENT: "<<G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID()<<G4endl;
 
 	// This is a loop with an inner loop; speed wise not the best solution, but the geant4 examples are even worse and loop all hits + digits (1 pixel = 1 digit...), here the least amount of hits / digits were created and are looped
 	for (std::map<G4int, DetHit*>::const_iterator it =
@@ -122,7 +122,7 @@ void Digitizer::Digitize()
 		if ((*actualPixelDigitsCollection)[iDigi]->GetCharge() >= fThreshold)
 		{
 			fPixelDigitsCollection->insert(new PixelDigi(*(*actualPixelDigitsCollection)[iDigi]));
-			// 	std::cout << "\nADD DIGIT: " << (*actualPixelDigitsCollection)[iDigi]->GetColumn() << "/" << (*actualPixelDigitsCollection)[iDigi]->GetRow() << "/" << (*actualPixelDigitsCollection)[iDigi]->GetCharge() << std::endl;
+			// 	G4cout << "\nADD DIGIT: " << (*actualPixelDigitsCollection)[iDigi]->GetColumn() << "/" << (*actualPixelDigitsCollection)[iDigi]->GetRow() << "/" << (*actualPixelDigitsCollection)[iDigi]->GetCharge() << G4endl;
 		}
 	}
 
@@ -154,10 +154,10 @@ void Digitizer::AddHitToDigits(std::map<G4int, DetHit*>::const_iterator iHit,
 
 	G4ThreeVector position = iHit->second->GetPosition(); // are negative in z or not?
 
-	/*std::cout << "\nADD HIT: " << column << "/" << row << "/"
-	 << iHit->second->GetParticle() << std::endl;
-	 std::cout << "    ENERGY: " << G4BestUnit(charge, "Energy") << std::endl;
-	 std::cout << "    CHARGE: " << charge << " e" << std::endl;*/
+	/*G4cout << "\nADD HIT: " << column << "/" << row << "/"
+	 << iHit->second->GetParticle() << G4endl;
+	 G4cout << "    ENERGY: " << G4BestUnit(charge, "Energy") << G4endl;
+	 G4cout << "    CHARGE: " << charge << " e" << G4endl;*/
 
 	if (fCalcChargeCloud)
 	{  // distribute the deposited charge into neighboring pixels
@@ -189,8 +189,11 @@ void Digitizer::AddHitToDigits(std::map<G4int, DetHit*>::const_iterator iHit,
 		}
 		// Gamma charge cloud size is simulated by the secondary electrons in GEANT4!
 		// MC correct like in http://dx.doi.org/10.1016/j.nima.2010.11.173
+		// But primary gamma interaction might be without photo electron to save time
+		// Then use this approximation
 		else
 		{
+//			G4cout << "GAMMA fSigma0 " << G4BestUnit(fSigma0, "Length") << G4endl;
 			z = CalcZfromSigma(z, getSigmaPhotons(iHit->second->GetEdep()));
 		}
 
@@ -355,19 +358,27 @@ double Digitizer::CalcZfromSigma(const double& z, const double& sigma)
 	// The new z cannot be calculated analytically
 	// sigma_new^2 * ln(z / z_new) - sigma^2 = 0 has to be solved numerically
 	// This is the easiest and stupiest way of doing it ...
-	for (double zNew = z; zNew < z + fSensorThickness; zNew += 0.5 * um)
+	for (double zNew = z; zNew < z + 2 * fSensorThickness; zNew += 0.5 * um)
 	{  // increase z_new until close solution is found
 		double actual_sigma = CalcSigmaDiffusion(zNew, fBias, fTemperatur);
 		double minimizeme = 2 * actual_sigma * actual_sigma * std::log(zNew / z)
 				- sigma * sigma;  // function to minimize
 		if (minimizeme > 0) // function has 0 crossing, take this as the minimum
 			return zNew;
+
+//		if (G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID() == 1046){
+//			G4cout << "    sigma " << G4BestUnit(sigma, "Length") << G4endl;
+//			G4cout << "    z " << G4BestUnit(z, "Length") << G4endl;
+//			G4cout << "    zNew " << G4BestUnit(zNew, "Length") << G4endl;
+//			G4cout << "    actual_sigma " << G4BestUnit(actual_sigma, "Length") << G4endl;
+//			G4cout << "    minimizeme " << minimizeme << G4endl;
+//		}
 	}
 
 	// No z new was found, should not occur!
-	std::cout << "\nEVENT: "
+	G4cout << "\nEVENT: "
 			<< G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID()
-			<< std::endl;
+			<< G4endl;
 	G4cout << "    z " << G4BestUnit(z, "Length") << G4endl;
 	G4cout << "    sigma " << G4BestUnit(sigma, "Length") << G4endl;
 
@@ -405,62 +416,62 @@ void Digitizer::PrintSettings()
 void Digitizer::SetEnergyPerCharge(const G4double& energyPerCharge)
 {
 	fEHPerChargeElectrons = energyPerCharge;
-	std::cout << "Set energy per e-h pair to "
-			<< G4BestUnit(energyPerCharge, "Energy") << std::endl; // FIXME: G4cout + MT not working
+	G4cout << "Set energy per e-h pair to "
+			<< G4BestUnit(energyPerCharge, "Energy") << G4endl; // FIXME: G4cout + MT not working
 }
 
 void Digitizer::SetThreshold(const G4int& threshold)
 {
 	fThreshold = threshold;
-	std::cout << "Set threshold to " << threshold << " electrons" << std::endl; // FIXME: G4cout + MT not working
+	G4cout << "Set threshold to " << threshold << " electrons" << G4endl; // FIXME: G4cout + MT not working
 }
 
 void Digitizer::SetNoise(const G4int& noise)
 {
 	fNoise = noise;
-	std::cout << "Set noise to " << noise << " electrons" << std::endl; // FIXME: G4cout + MT not working
+	G4cout << "Set noise to " << noise << " electrons" << G4endl; // FIXME: G4cout + MT not working
 }
 
 void Digitizer::SetBias(const G4double& bias)
 {
 	fBias = bias;
-	std::cout << "Set bias voltage to " << bias << " volt" << std::endl; // FIXME: G4cout + MT not working
+	G4cout << "Set bias voltage to " << bias << " volt" << G4endl; // FIXME: G4cout + MT not working
 }
 void Digitizer::SetTemperature(const G4double& temperature)
 {
 	fTemperatur = temperature;
-	std::cout << "Set temperature to " << temperature << " Kelvin" << std::endl; // FIXME: G4cout + MT not working
+	G4cout << "Set temperature to " << temperature << " Kelvin" << G4endl; // FIXME: G4cout + MT not working
 }
 void Digitizer::SetSensorZdirection(const bool& direction)
 {
 	fReadOutDirection = direction;
 	if (direction)
-		std::cout << "Set read out electronics behind sensor" << std::endl; // FIXME: G4cout + MT not working
+		G4cout << "Set read out electronics behind sensor" << G4endl; // FIXME: G4cout + MT not working
 	else
-		std::cout << "Set read out electronics before sensor" << std::endl; // FIXME: G4cout + MT not working
+		G4cout << "Set read out electronics before sensor" << G4endl; // FIXME: G4cout + MT not working
 }
 void Digitizer::SetInitChargeCloudSigma(const G4double& sigma0) // the initial charge cloud is not zero due to repulsion
 {
 	fSigma0 = sigma0;
-	std::cout << "Set the initial charge cloud sigma to "
-			<< G4BestUnit(fSigma0, "Length") << std::endl; // FIXME: G4cout + MT not working
+	G4cout << "Set the initial charge cloud sigma to "
+			<< G4BestUnit(fSigma0, "Length") << G4endl; // FIXME: G4cout + MT not working
 }
 void Digitizer::SetChargeCloudSigmaCorrection(const G4double& sigmaCC) // the sigma is higher due to repulsion, so correct sigma with factor > 0; very simple approximation; for further info see NIMA 606 (2009) 508-516
 {
 	if (sigmaCC > 0.5)
 	{
 		fSigmaCC = sigmaCC;
-		std::cout << "Set charge cloud sigma correction factor to " << sigmaCC
-				<< std::endl;  // FIXME: G4cout + MT not working
+		G4cout << "Set charge cloud sigma correction factor to " << sigmaCC
+				<< G4endl;  // FIXME: G4cout + MT not working
 	}
 }
 void Digitizer::SetTrigger(const bool& triggerHits)
 {
 	fTriggerHits = triggerHits;
 	if (triggerHits)
-		std::cout << "Set trigger functionality to ON " << std::endl; // FIXME: G4cout + MT not working
+		G4cout << "Set trigger functionality to ON " << G4endl; // FIXME: G4cout + MT not working
 	else
-		std::cout << "Set trigger functionality to OFF " << std::endl; // FIXME: G4cout + MT not working
+		G4cout << "Set trigger functionality to OFF " << G4endl; // FIXME: G4cout + MT not working
 }
 
 double Digitizer::coth(const double& x)
