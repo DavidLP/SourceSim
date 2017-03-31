@@ -126,7 +126,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
 
 	//	Source collimator, two cylinders with different material and small hole in the middle
 	fSolidCollInner = new G4Tubs("CollimatorInner",
-			500. * um,
+			500. * um,  // inner radius
 			1. * cm,
 			0.75 * cm,
 			0. * deg,
