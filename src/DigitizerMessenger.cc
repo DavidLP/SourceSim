@@ -30,6 +30,12 @@ DigitizerMessenger::DigitizerMessenger(Digitizer* digitizer)
 	fBiasCmd->SetDefaultValue(60.);
 	fBiasCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
 
+	fDeplCmd = new G4UIcmdWithADouble("/digitizer/depl", this);
+	fDeplCmd->SetGuidance("Sensor depletion voltage in volt");
+	fDeplCmd->SetParameterName("choice", true);
+	fDeplCmd->SetDefaultValue(50.);
+	fDeplCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+
 	fTemperatureCmd = new G4UIcmdWithADouble("/digitizer/temperature", this);
 	fTemperatureCmd->SetGuidance("Sensor temperature in Kelvin");
 	fTemperatureCmd->SetParameterName("choice", true);
@@ -67,6 +73,7 @@ DigitizerMessenger::~DigitizerMessenger()
 	delete fThresholdCmd;
 	delete fNoiseCmd;
 	delete fBiasCmd;
+	delete fDeplCmd;
 	delete fTemperatureCmd;
 	delete fInitChargeCloudCmd;
 	delete fCorrChargeCloudCmd;
@@ -83,6 +90,9 @@ void DigitizerMessenger::SetNewValue(G4UIcommand * command, G4String newValue)
 	}
 	if (command == fBiasCmd) {
 		fDigitizer->SetBias(fBiasCmd->GetNewDoubleValue(newValue));
+	}
+	if (command == fDeplCmd) {
+		fDigitizer->SetBias(fDeplCmd->GetNewDoubleValue(newValue));
 	}
 	if (command == fTemperatureCmd) {
 		fDigitizer->SetTemperature(fTemperatureCmd->GetNewDoubleValue(newValue));

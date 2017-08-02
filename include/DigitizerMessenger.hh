@@ -22,6 +22,7 @@ class DigitizerMessenger: public G4UImessenger {
 		G4UIcmdWithAnInteger* fThresholdCmd;
 		G4UIcmdWithAnInteger* fNoiseCmd;
 		G4UIcmdWithADouble* fBiasCmd;
+		G4UIcmdWithADouble* fDeplCmd;
 		G4UIcmdWithADouble* fTemperatureCmd;
 		G4UIcmdWithAnInteger* fDriftDirectionCmd;
 		G4UIcmdWithADoubleAndUnit* fInitChargeCloudCmd;
