@@ -103,6 +103,7 @@ void Digitizer::Digitize()
 				"Cannot access pixel hits collection", FatalException, "");
 
 //	std::cout<<"\nEVENT: "<<G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID()<<G4endl;
+//	PrintSettings();
 
 	// This is a loop with an inner loop; speed wise not the best solution, but the geant4 examples are even worse and loop all hits + digits (1 pixel = 1 digit...), here the least amount of hits / digits were created and are looped
 	for (std::map<G4int, DetHit*>::const_iterator it =
@@ -466,6 +467,14 @@ void Digitizer::SetBias(const G4double& bias)
 	fBias = bias;
 	G4cout << "Set bias voltage to " << bias << " volt" << G4endl; // FIXME: G4cout + MT not working
 }
+
+void Digitizer::SetDepletion(const G4double& voltage)
+{
+	fVdep = voltage;
+	std::cout<<"Set depletion voltage to " << voltage << " volt" << std::endl;
+	G4cout << "Set depletion voltage to " << voltage << " volt" << G4endl; // FIXME: G4cout + MT not working
+}
+
 void Digitizer::SetTemperature(const G4double& temperature)
 {
 	fTemperatur = temperature;

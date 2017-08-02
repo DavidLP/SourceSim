@@ -20,6 +20,7 @@ class Digitizer: public G4VDigitizerModule {
 		void SetThreshold(const G4int&);  // threshold in electrons
 		void SetNoise(const G4int&);  // sigma of gaussian noise in electrons
 		void SetBias(const G4double&);  // sensor bias [V]
+		void SetDepletion(const G4double&);  // sensor depletion voltage [V]
 		void SetTemperature(const G4double&);  // sensor temperatur [K]
 		void SetSensorZdirection(const bool&);  // electron z-drift direction, always towards readout electrode; false: in z-direction
 		void SetInitChargeCloudSigma(const G4double&); // the initial spacing of the charge cloud sigma [um]

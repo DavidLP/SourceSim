@@ -14,7 +14,7 @@ class DigitizerMessenger: public G4UImessenger {
 		DigitizerMessenger(Digitizer*);
 		~DigitizerMessenger();
 
-		void SetNewValue(G4UIcommand*, G4String);
+		virtual void SetNewValue(G4UIcommand*, G4String);
 
 	private:
 		Digitizer* fDigitizer;

@@ -16,55 +16,55 @@ DigitizerMessenger::DigitizerMessenger(Digitizer* digitizer)
 	fThresholdCmd->SetGuidance("Threshold in electrons to create a pixel digi");
 	fThresholdCmd->SetParameterName("choice", true);
 	fThresholdCmd->SetDefaultValue((G4int) 2000);
-	fThresholdCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+	fThresholdCmd->AvailableForStates(G4State_Idle);
 
 	fNoiseCmd = new G4UIcmdWithAnInteger("/digitizer/noise", this);
 	fNoiseCmd->SetGuidance("Noise in electrons to create a pixel digi");
 	fNoiseCmd->SetParameterName("choice", true);
 	fNoiseCmd->SetDefaultValue((G4int) 2000);
-	fNoiseCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+	fNoiseCmd->AvailableForStates(G4State_Idle);
 
 	fBiasCmd = new G4UIcmdWithADouble("/digitizer/bias", this);
 	fBiasCmd->SetGuidance("Sensor bias in volt");
 	fBiasCmd->SetParameterName("choice", true);
 	fBiasCmd->SetDefaultValue(60.);
-	fBiasCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+	fBiasCmd->AvailableForStates(G4State_Idle);
 
 	fDeplCmd = new G4UIcmdWithADouble("/digitizer/depl", this);
 	fDeplCmd->SetGuidance("Sensor depletion voltage in volt");
 	fDeplCmd->SetParameterName("choice", true);
 	fDeplCmd->SetDefaultValue(50.);
-	fDeplCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+	fDeplCmd->AvailableForStates(G4State_Idle);
 
 	fTemperatureCmd = new G4UIcmdWithADouble("/digitizer/temperature", this);
 	fTemperatureCmd->SetGuidance("Sensor temperature in Kelvin");
 	fTemperatureCmd->SetParameterName("choice", true);
 	fTemperatureCmd->SetDefaultValue(300.);
-	fTemperatureCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+	fTemperatureCmd->AvailableForStates(G4State_Idle);
 
 	fDriftDirectionCmd = new G4UIcmdWithAnInteger("/digitizer/driftdirection", this);
 	fDriftDirectionCmd->SetGuidance("Z-Drift direction of the electrons towards readout electrode");
 	fDriftDirectionCmd->SetParameterName("choice", true);
 	fDriftDirectionCmd->SetDefaultValue((G4int) 0);
-	fDriftDirectionCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+	fDriftDirectionCmd->AvailableForStates(G4State_Idle);
 
 	fInitChargeCloudCmd = new G4UIcmdWithADoubleAndUnit("/digitizer/initsigmacc", this);
 	fInitChargeCloudCmd->SetGuidance("Initial charge cloud sigma");
 	fInitChargeCloudCmd->SetParameterName("initcc", true);
 	fInitChargeCloudCmd->SetUnitCategory("Length");
-	fInitChargeCloudCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+	fInitChargeCloudCmd->AvailableForStates(G4State_Idle);
 
 	fCorrChargeCloudCmd = new G4UIcmdWithADouble("/digitizer/cccorrection", this);
 	fCorrChargeCloudCmd->SetGuidance("Charge cloud sigma correction factor");
 	fCorrChargeCloudCmd->SetParameterName("choice", true);
 	fCorrChargeCloudCmd->SetDefaultValue(1.);
-	fCorrChargeCloudCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+	fCorrChargeCloudCmd->AvailableForStates(G4State_Idle);
 
 	fTriggerCmd = new G4UIcmdWithAnInteger("/digitizer/trigger", this);
 	fTriggerCmd->SetGuidance("Enable the triggering of detector hits");
 	fTriggerCmd->SetParameterName("choice", true);
 	fTriggerCmd->SetDefaultValue((G4int) 0);
-	fTriggerCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+	fTriggerCmd->AvailableForStates(G4State_Idle);
 }
 
 DigitizerMessenger::~DigitizerMessenger()
@@ -83,6 +83,7 @@ DigitizerMessenger::~DigitizerMessenger()
 void DigitizerMessenger::SetNewValue(G4UIcommand * command, G4String newValue)
 {
 	if (command == fThresholdCmd) {
+		G4cout << "SET THRESHOLD"<<G4endl;
 		fDigitizer->SetThreshold(fThresholdCmd->GetNewIntValue(newValue));
 	}
 	if (command == fNoiseCmd) {
@@ -92,7 +93,7 @@ void DigitizerMessenger::SetNewValue(G4UIcommand * command, G4String newValue)
 		fDigitizer->SetBias(fBiasCmd->GetNewDoubleValue(newValue));
 	}
 	if (command == fDeplCmd) {
-		fDigitizer->SetBias(fDeplCmd->GetNewDoubleValue(newValue));
+		fDigitizer->SetDepletion(fDeplCmd->GetNewDoubleValue(newValue));
 	}
 	if (command == fTemperatureCmd) {
 		fDigitizer->SetTemperature(fTemperatureCmd->GetNewDoubleValue(newValue));
