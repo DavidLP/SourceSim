@@ -29,8 +29,10 @@ Digitizer::Digitizer(G4String name) :
 		fNoise(130),  // std. IBL detector
 		fTemperatur(330),  // 56.8 C (uncooled 50-60 is common)
 		fBias(80.),  // bias of the sensor in volt
+		fVdep(45.),  // depletion voltage of sensor in volt
 		fSigma0(5. * um),  // initial charge cloud gaussian profile sigma
 		fSigmaCC(1.), // correction factor for charge cloud sigma(z) to take into account also repulsion
+		fNtype(true),  // ntype detector otherwise ptype
 		fTriggerHits(false), // trigger: create digits only if trigger volume is hit //FIXME
 		fPixelDigitsCollection(0), fTriggerHCID(-1)
 {
@@ -181,29 +183,28 @@ void Digitizer::AddHitToDigits(std::map<G4int, DetHit*>::const_iterator iHit,
 		//G4cout << " z before " << G4BestUnit(z, "Length") << G4endl;
 
 		// Increase z to simulate a charge cloud with non zero spread at start,
-		if (iHit->second->GetParticle() != "gamma") // Used for charged particles where no reasonable theory exists, I guess
-		{
-//			G4cout << " fSigma0 " << G4BestUnit(fSigma0, "Length") << G4endl;
-			if (fSigma0 > 0)
-				z = CalcZfromSigma(z, fSigma0);
-		}
+//		if (iHit->second->GetParticle() != "gamma") // Used for charged particles where no reasonable theory exists, I guess
+//		{
+////			G4cout << " fSigma0 " << G4BestUnit(fSigma0, "Length") << G4endl;
+//			if (fSigma0 > 0)
+//				z = CalcZfromSigma(z, fSigma0);
+//		}
 		// Gamma charge cloud size is simulated by the secondary electrons in GEANT4!
 		// MC correct like in http://dx.doi.org/10.1016/j.nima.2010.11.173
 		// But primary gamma interaction might be without photo electron to save time
 		// Then use this approximation
-		else
-		{
-//			G4cout << "GAMMA fSigma0 " << G4BestUnit(fSigma0, "Length") << G4endl;
-			z = CalcZfromSigma(z, getSigmaPhotons(iHit->second->GetEdep()));
-		}
+//		else
+//		{
+////			G4cout << "GAMMA fSigma0 " << G4BestUnit(fSigma0, "Length") << G4endl;
+//			z = CalcZfromSigma(z, getSigmaPhotons(iHit->second->GetEdep()));
+//		}
 
 		//G4cout << " z after " << G4BestUnit(z, "Length") << G4endl;
-
-		if (z == 0)
-		{  // Special case. charge does not travel at all
-			AddChargeToDigits(column, row, charge, digits);
-			return;
-		}
+//		if (z == 0)
+//		{  // Special case. charge does not travel at all, does not exist anymore due to repulsion
+//			AddChargeToDigits(column, row, charge, digits);
+//			return;
+//		}
 
 		// run time optimized loops using an abort condition utilizing that the charge sharing always decreases for increased distance to seed pixel and the fact that the total charge fraction sum is 1
 		for (int iColumn = 0; column + iColumn < fNcolumns; ++iColumn)
@@ -221,6 +222,8 @@ void Digitizer::AddHitToDigits(std::map<G4int, DetHit*>::const_iterator iHit,
 				totalFraction += fraction;
 				if (fraction < minFraction) //  abort loop if fraction is too small, next pixel have even smaller fraction
 					break;
+//				G4cout << "Col/Row/Fraction: " << column + iColumn <<"\t"<<row + iRow<<"\t"<<fraction <<
+//						"\t"<<G4BestUnit(charge * fEHPerChargeElectrons * eV, "Energy")<< "\t"<<G4BestUnit(position[0], "Length")<< "\t"<<G4BestUnit(position[1], "Length")<<G4endl;
 				AddChargeToDigits(column + iColumn, row + iRow,
 						charge * fraction, digits);
 				if (totalFraction == 1.) // abort if all charge already distributed
@@ -234,6 +237,7 @@ void Digitizer::AddHitToDigits(std::map<G4int, DetHit*>::const_iterator iHit,
 				totalFraction += fraction;
 				if (fraction < minFraction) //  abort loop if fraction is too small, next pixel have even smaller fraction
 					break;
+//				G4cout << "Col/Row/Fraction: " << column + iColumn <<"\t"<<row + iRow<<"\t"<<fraction << G4endl;
 				AddChargeToDigits(column + iColumn, row + iRow,
 						charge * fraction, digits);
 				if (totalFraction == 1.) // abort if all charge already distributed
@@ -255,6 +259,7 @@ void Digitizer::AddHitToDigits(std::map<G4int, DetHit*>::const_iterator iHit,
 				totalFraction += fraction;
 				if (fraction < minFraction) //  abort loop if fraction is too small, next pixel have even smaller fraction
 					break;
+//				G4cout << "Col/Row/Fraction: " << column + iColumn <<"\t"<<row + iRow<<"\t"<<fraction << G4endl;
 				AddChargeToDigits(column + iColumn, row + iRow,
 						charge * fraction, digits);
 				if (totalFraction == 1.) // abort if all charge already distributed
@@ -268,6 +273,7 @@ void Digitizer::AddHitToDigits(std::map<G4int, DetHit*>::const_iterator iHit,
 				totalFraction += fraction;
 				if (fraction < minFraction) //  abort loop if fraction is too small, next pixel have even smaller fraction
 					break;
+//				G4cout << "Col/Row/Fraction: " << column + iColumn <<"\t"<<row + iRow<<"\t"<<fraction << G4endl;
 				AddChargeToDigits(column + iColumn, row + iRow,
 						charge * fraction, digits);
 				if (totalFraction == 1.) // abort if all charge already distributed
@@ -316,7 +322,11 @@ double Digitizer::CalcChargeFraction(const double& x, const double& y,
 	 voltage : the applied voltage
 	 temperature : the temperature in Kelvin
 	 */
-	double sigma = CalcSigmaDiffusion(z, voltage, temperature) * fSigmaCC; // apply correction factor to take repulsion into account
+	double sigma = CalcSigmaDiffusion(z, voltage, temperature);
+
+	sigma = std::sqrt(fSigma0 * fSigma0 + sigma * sigma);  // add sigma0 at t=0
+
+	sigma *= fSigmaCC; // apply correction factor to take repulsion into account, when needed to describe data
 
 	if (sigma == 0)  // tread not defined calculation input
 		return 1.;
@@ -330,13 +340,25 @@ double Digitizer::CalcChargeFraction(const double& x, const double& y,
 double Digitizer::CalcSigmaDiffusion(const double& length,
 		const double& voltage, const double& temperature)
 {
-	/* Calculates the sigma of the diffusion according to Einsteins equation.
+	/* Calculates the sigma of the diffusion by using the drift time estimate from the
+	 * analytical E-Field solution for a planar detector.
 	 length : the drift length
 	 voltage : the applied voltage
 	 temperature : the temperature in Kelvin
 	 */
 	const double kb_K_e = 8.6173e-5; // Boltzmann Constant * Kelvin / elemetary charge
-	return length * std::sqrt(2. * temperature / voltage * kb_K_e);
+//	std::cout<<"fSensorThickness\t"<<fSensorThickness<<"\n";
+//	std::cout<<"length\t"<<length<<"\n";
+//	std::cout<<"temperature\t"<<temperature<<"\n";
+//	std::cout<<"voltage\t"<<voltage<<"\n";
+//	std::cout<<"fVdep\t"<<fVdep<<"\n";
+//
+//	G4cout<<"OLD "<<length * std::sqrt(2. * temperature / voltage * kb_K_e)<<G4endl;
+//	G4cout<<"NEW "<<fSensorThickness * std::sqrt(temperature * kb_K_e / fVdep) *
+//			std::sqrt(std::log(1. + 2./fSensorThickness * fVdep / (voltage - fVdep) * length))<<G4endl;
+
+	return fSensorThickness * std::sqrt(temperature * kb_K_e / fVdep) *
+		   std::sqrt(std::log(1. + 2./fSensorThickness * fVdep / (voltage - fVdep) * length));
 }
 
 double Digitizer::CalcBivarianteNormalCDFWithLimits(const double& a1,
@@ -351,41 +373,43 @@ double Digitizer::CalcBivarianteNormalCDFWithLimits(const double& a1,
 					- erf((b1 - mu2) / std::sqrt(2 * sigma * sigma)));
 }
 
-double Digitizer::CalcZfromSigma(const double& z, const double& sigma)
-{
-	// To simulate the initial charge cloud the z-position of the hit is scales up to
-	// give a gaussian with sigma0 at the old z-position.
-	// The new z cannot be calculated analytically
-	// sigma_new^2 * ln(z / z_new) - sigma^2 = 0 has to be solved numerically
-	// This is the easiest and stupiest way of doing it ...
-	for (double zNew = z; zNew < z + 2 * fSensorThickness; zNew += 0.5 * um)
-	{  // increase z_new until close solution is found
-		double actual_sigma = CalcSigmaDiffusion(zNew, fBias, fTemperatur);
-		double minimizeme = 2 * actual_sigma * actual_sigma * std::log(zNew / z)
-				- sigma * sigma;  // function to minimize
-		if (minimizeme > 0) // function has 0 crossing, take this as the minimum
-			return zNew;
-
-//		if (G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID() == 1046){
-//			G4cout << "    sigma " << G4BestUnit(sigma, "Length") << G4endl;
-//			G4cout << "    z " << G4BestUnit(z, "Length") << G4endl;
-//			G4cout << "    zNew " << G4BestUnit(zNew, "Length") << G4endl;
-//			G4cout << "    actual_sigma " << G4BestUnit(actual_sigma, "Length") << G4endl;
-//			G4cout << "    minimizeme " << minimizeme << G4endl;
+//double Digitizer::CalcZfromSigma(const double& z, const double& sigma)
+//{
+//	// To simulate the initial charge cloud the z-position of the hit is scales up to
+//	// give a gaussian with sigma0 at the old z-position.
+//	// The new z cannot be calculated analytically
+//	// sigma_new^2 * ln(z / z_new) - sigma^2 = 0 has to be solved numerically
+//	// This is the easiest and stupiest way of doing it ...
+//	for (double zNew = z; zNew < z + 2 * fSensorThickness; zNew += 0.5 * um)
+//	{  // increase z_new until close solution is found
+//		double actual_sigma = CalcSigmaDiffusion(zNew, fBias, fTemperatur);
+//		double minimizeme = 2 * actual_sigma * actual_sigma * std::log(zNew / z)
+//				- sigma * sigma;  // function to minimize
+//		if (minimizeme > 0){ // function has 0 crossing, take this as the minimum
+//			G4cout<<"ADDED Z\t"<<zNew - z<<"\n";
+//			return zNew;
 //		}
-	}
-
-	// No z new was found, should not occur!
-	G4cout << "\nEVENT: "
-			<< G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID()
-			<< G4endl;
-	G4cout << "    z " << G4BestUnit(z, "Length") << G4endl;
-	G4cout << "    sigma " << G4BestUnit(sigma, "Length") << G4endl;
-
-	G4Exception("Digitizer::CalcZfromSigma()", "MyCode0004", FatalException,
-			"Cannot calculate hit z-position for initial charge cloud simulation. Decrease sigma0.");
-	return 0;
-}
+//
+////		if (G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID() == 1046){
+////			G4cout << "    sigma " << G4BestUnit(sigma, "Length") << G4endl;
+////			G4cout << "    z " << G4BestUnit(z, "Length") << G4endl;
+////			G4cout << "    zNew " << G4BestUnit(zNew, "Length") << G4endl;
+////			G4cout << "    actual_sigma " << G4BestUnit(actual_sigma, "Length") << G4endl;
+////			G4cout << "    minimizeme " << minimizeme << G4endl;
+////		}
+//	}
+//
+//	// No z new was found, should not occur!
+//	G4cout << "\nEVENT: "
+//			<< G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID()
+//			<< G4endl;
+//	G4cout << "    z " << G4BestUnit(z, "Length") << G4endl;
+//	G4cout << "    sigma " << G4BestUnit(sigma, "Length") << G4endl;
+//
+//	G4Exception("Digitizer::CalcZfromSigma()", "MyCode0004", FatalException,
+//			"Cannot calculate hit z-position for initial charge cloud simulation. Decrease sigma0.");
+//	return 0;
+//}
 
 void Digitizer::PrintSettings()
 {
@@ -394,9 +418,14 @@ void Digitizer::PrintSettings()
 	{
 		G4cout << "  Calculate charge cloud: yes\t" << G4endl;
 		G4cout << "    Bias\t" << fBias << G4endl;
+		G4cout << "    Depletion voltage\t" << fVdep << G4endl;
 		G4cout << "    Temperature\t" << fTemperatur << G4endl;
 		G4cout << "    Init. Sigma\t" << G4BestUnit(fSigma0, "Length") << G4endl;
 		G4cout << "    Sigma Corr. Factor\t" << fSigmaCC << G4endl;
+		if (fNtype)
+			G4cout << "    Bulk type\tn" << G4endl;
+		else
+			G4cout << "    Bulk type\tp" << G4endl;
 	}
 	else
 	G4cout << "  Calculate charge cloud: no\t" << G4endl;

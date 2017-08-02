@@ -53,9 +53,11 @@ class Digitizer: public G4VDigitizerModule {
 		G4int fThreshold;  // detection thresholdl [e]
 		G4int fNoise;  // gaussian noise sigma [e]
 		G4double fTemperatur;  // [Kelvin]
-		G4double fBias;  // sensor bias votlage [V]
+		G4double fBias;  // sensor bias voltage [V]
+		G4double fVdep;  // sensor depletion voltage [V]
 		G4double fSigma0; // initial charge cloud sigma [um]
 		G4double fSigmaCC; // correction factor for charge cloud sigma
+		bool fNtype;  // detector bulk type
 		bool fTriggerHits;  // create hits only if there are hits in the trigger volume
 
 		//Constant variables that cannot be changed yet between runs, yet
