@@ -15,8 +15,8 @@
 #include "DetectorConstruction.hh"
 
 // Std. pixel sensor geometry, IBL planar single chip sensor
-const G4int nColumns = 80;
-const G4double pitchX = 250 * um;  // pixel size x width (column)
+const G4int nColumns = 336; //80;
+const G4double pitchX = 50 * um;  // 250 * um;  // pixel size x width (column)
 const G4int nRows = 336;
 const G4double pitchY = 50 * um;  // pixel size y width (row)
 

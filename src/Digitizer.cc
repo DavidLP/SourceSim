@@ -30,9 +30,9 @@ Digitizer::Digitizer(G4String name) :
 		fTemperatur(330),  // 56.8 C (uncooled 50-60 is common)
 		fBias(80.),  // bias of the sensor in volt
 		fVdep(45.),  // depletion voltage of sensor in volt
-		fSigma0(5. * um),  // initial charge cloud gaussian profile sigma
+		fSigma0(0. * um),  // initial charge cloud gaussian profile sigma
 		fSigmaCC(1.), // correction factor for charge cloud sigma(z) to take into account also repulsion
-		fNtype(true),  // ntype detector otherwise ptype
+		fNtype(false),  // ntype detector otherwise ptype
 		fTriggerHits(false), // trigger: create digits only if trigger volume is hit //FIXME
 		fPixelDigitsCollection(0), fTriggerHCID(-1)
 {
@@ -358,6 +358,11 @@ double Digitizer::CalcSigmaDiffusion(const double& length,
 //	G4cout<<"NEW "<<fSensorThickness * std::sqrt(temperature * kb_K_e / fVdep) *
 //			std::sqrt(std::log(1. + 2./fSensorThickness * fVdep / (voltage - fVdep) * length))<<G4endl;
 
+	if (~fNtype){
+		return fSensorThickness * std::sqrt(temperature * kb_K_e / fVdep) *
+				   std::sqrt(-std::log(1. - 2./fSensorThickness * fVdep / (voltage + fVdep) * length));
+	}
+
 	return fSensorThickness * std::sqrt(temperature * kb_K_e / fVdep) *
 		   std::sqrt(std::log(1. + 2./fSensorThickness * fVdep / (voltage - fVdep) * length));
 }
@@ -491,6 +496,7 @@ void Digitizer::SetSensorZdirection(const bool& direction)
 void Digitizer::SetInitChargeCloudSigma(const G4double& sigma0) // the initial charge cloud is not zero due to repulsion
 {
 	fSigma0 = sigma0;
+	std::cout<<"Set the initial charge cloud sigma t " << G4BestUnit(fSigma0, "Length") << std::endl;
 	G4cout << "Set the initial charge cloud sigma to "
 			<< G4BestUnit(fSigma0, "Length") << G4endl; // FIXME: G4cout + MT not working
 }
