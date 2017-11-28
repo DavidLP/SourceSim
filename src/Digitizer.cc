@@ -15,6 +15,7 @@
 #include "G4SDManager.hh"
 #include "G4DigiManager.hh"
 #include "G4ios.hh"
+#include "G4PhysicalConstants.hh"
 
 #include "Randomize.hh"
 
@@ -32,7 +33,8 @@ Digitizer::Digitizer(G4String name) :
 		fVdep(45.),  // depletion voltage of sensor in volt
 		fSigma0(0. * um),  // initial charge cloud gaussian profile sigma
 		fSigmaCC(1.), // correction factor for charge cloud sigma(z) to take into account also repulsion
-		fNtype(false),  // ntype detector otherwise ptype
+		fNtype(true),  // ntype detector otherwise ptype
+		fRepulsion(false),  // calculates charge cloud sigma with repulsion, needs fSigma0 != 0
 		fTriggerHits(false), // trigger: create digits only if trigger volume is hit //FIXME
 		fPixelDigitsCollection(0), fTriggerHCID(-1)
 {
@@ -52,10 +54,19 @@ Digitizer::Digitizer(G4String name) :
 	fNcolumns = pWorld->GetNcolumns();
 	fNrows = pWorld->GetNrows();
 
+	// Mobility value not important, since it cancelles out here for cc width calc
+	fMu = 1150. * 1e4 * 1e4 / 1e6; // um2 / us V
+
 	fEHPerChargeElectrons = getEHenergy(fTemperatur); // getEHenergyElectrons(fTemperatur);
 	fEHPerChargePhotons = getEHenergy(fTemperatur); // getEHenergyPhotons(fTemperatur);
 
 	PrintSettings();
+
+//	std::cout<<"Sigma diff "<<CalcSigmaDiffusion(200*um, 80., fTemperatur, 16000.);
+//	fRepulsion=true;
+//	fSigma0 = 0.0873564802323;
+//	std::cout<<"Sigma diff rep "<<CalcSigmaDiffusion(200*um, 80., fTemperatur, 16000.);
+
 }
 
 Digitizer::~Digitizer()
@@ -102,7 +113,8 @@ void Digitizer::Digitize()
 		G4Exception("Digitizer::Digitize()",
 				"Cannot access pixel hits collection", FatalException, "");
 
-//	std::cout<<"\nEVENT: "<<G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID()<<G4endl;
+//	if (G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID() % 1 == 0)
+//		std::cout<<"\nEVENT: "<<G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID()<<G4endl;
 //	PrintSettings();
 
 	// This is a loop with an inner loop; speed wise not the best solution, but the geant4 examples are even worse and loop all hits + digits (1 pixel = 1 digit...), here the least amount of hits / digits were created and are looped
@@ -125,7 +137,7 @@ void Digitizer::Digitize()
 		if ((*actualPixelDigitsCollection)[iDigi]->GetCharge() >= fThreshold)
 		{
 			fPixelDigitsCollection->insert(new PixelDigi(*(*actualPixelDigitsCollection)[iDigi]));
-			// 	G4cout << "\nADD DIGIT: " << (*actualPixelDigitsCollection)[iDigi]->GetColumn() << "/" << (*actualPixelDigitsCollection)[iDigi]->GetRow() << "/" << (*actualPixelDigitsCollection)[iDigi]->GetCharge() << G4endl;
+//			G4cout << "\nADD DIGIT: " << (*actualPixelDigitsCollection)[iDigi]->GetColumn() << "/" << (*actualPixelDigitsCollection)[iDigi]->GetRow() << "/" << (*actualPixelDigitsCollection)[iDigi]->GetCharge() << G4endl;
 		}
 	}
 
@@ -157,10 +169,9 @@ void Digitizer::AddHitToDigits(std::map<G4int, DetHit*>::const_iterator iHit,
 
 	G4ThreeVector position = iHit->second->GetPosition(); // are negative in z or not?
 
-	/*G4cout << "\nADD HIT: " << column << "/" << row << "/"
-	 << iHit->second->GetParticle() << G4endl;
-	 G4cout << "    ENERGY: " << G4BestUnit(charge, "Energy") << G4endl;
-	 G4cout << "    CHARGE: " << charge << " e" << G4endl;*/
+//	G4cout << "\nADD HIT: " << column << "/" << row << "/" << iHit->second->GetParticle() << G4endl;
+//	G4cout << "    Position: " << G4BestUnit(position, "Length") << G4endl;
+//	G4cout << "    CHARGE: " << charge << " e" << G4endl;
 
 	if (fCalcChargeCloud)
 	{  // distribute the deposited charge into neighboring pixels
@@ -207,17 +218,22 @@ void Digitizer::AddHitToDigits(std::map<G4int, DetHit*>::const_iterator iHit,
 //			return;
 //		}
 
+//		std::cout<<"fNcolumns "<<fNcolumns<<std::endl;
+//		std::cout<<"fNrows "<<fNrows<<std::endl;
+//		std::cout<<"column "<<column<<std::endl;
+//		std::cout<<"row "<<row<<std::endl;
+
 		// run time optimized loops using an abort condition utilizing that the charge sharing always decreases for increased distance to seed pixel and the fact that the total charge fraction sum is 1
 		for (int iColumn = 0; column + iColumn < fNcolumns; ++iColumn)
 		{  // calc charge in pixels in column direction
 			if (totalFraction == 1.
-					|| CalcChargeFraction(position[0], position[1], z,
+					|| CalcChargeFraction(position[0], position[1], z, charge,
 							fPixelPitchX, fPixelPitchY, fBias, iColumn, 0,
 							fTemperatur) < minFraction) // omit row loop if charge fraction is already too low for seed row (=0)
 				break;
 			for (int iRow = 0; iRow < fNrows; ++iRow)
 			{  // calc charge in pixels in row direction
-				fraction = CalcChargeFraction(position[0], position[1], z,
+				fraction = CalcChargeFraction(position[0], position[1], z, charge,
 						fPixelPitchX, fPixelPitchY, fBias, iColumn, iRow,
 						fTemperatur);
 				totalFraction += fraction;
@@ -232,7 +248,7 @@ void Digitizer::AddHitToDigits(std::map<G4int, DetHit*>::const_iterator iHit,
 			}
 			for (int iRow = -1; row + iRow >= 0; --iRow)
 			{  // calc charge in pixels in -row direction
-				fraction = CalcChargeFraction(position[0], position[1], z,
+				fraction = CalcChargeFraction(position[0], position[1], z, charge,
 						fPixelPitchX, fPixelPitchY, fBias, iColumn, iRow,
 						fTemperatur);
 				totalFraction += fraction;
@@ -248,13 +264,13 @@ void Digitizer::AddHitToDigits(std::map<G4int, DetHit*>::const_iterator iHit,
 		for (int iColumn = -1; column + iColumn >= 0; --iColumn)
 		{  // calc charge in pixels in -column direction
 			if (totalFraction == 1.
-					|| CalcChargeFraction(position[0], position[1], z,
+					|| CalcChargeFraction(position[0], position[1], z, charge,
 							fPixelPitchX, fPixelPitchY, fBias, iColumn, 0,
 							fTemperatur) < minFraction) // omit row loop if charge fraction is already too low for seed row (=0)
 				break;
 			for (int iRow = 0; iRow < fNrows; ++iRow)
 			{  // calc charge in pixels in row direction
-				fraction = CalcChargeFraction(position[0], position[1], z,
+				fraction = CalcChargeFraction(position[0], position[1], z, charge,
 						fPixelPitchX, fPixelPitchY, fBias, iColumn, iRow,
 						fTemperatur);
 				totalFraction += fraction;
@@ -268,7 +284,7 @@ void Digitizer::AddHitToDigits(std::map<G4int, DetHit*>::const_iterator iHit,
 			}
 			for (int iRow = -1; row + iRow >= 0; --iRow)
 			{  // calc charge in pixels in -row direction
-				fraction = CalcChargeFraction(position[0], position[1], z,
+				fraction = CalcChargeFraction(position[0], position[1], z, charge,
 						fPixelPitchX, fPixelPitchY, fBias, iColumn, iRow,
 						fTemperatur);
 				totalFraction += fraction;
@@ -312,7 +328,7 @@ void Digitizer::AddChargeToDigits(const int& column, const int& row,
 }
 
 double Digitizer::CalcChargeFraction(const double& x, const double& y,
-		const double& z, const double& x_pitch, const double& y_pitch,
+		const double& z, const double& charge, const double& x_pitch, const double& y_pitch,
 		const double& voltage, const int& x_pixel_offset,
 		const int& y_pixel_offset, const double& temperature)
 {
@@ -323,14 +339,19 @@ double Digitizer::CalcChargeFraction(const double& x, const double& y,
 	 voltage : the applied voltage
 	 temperature : the temperature in Kelvin
 	 */
-	double sigma = CalcSigmaDiffusion(z, voltage, temperature);
+	double sigma = CalcSigmaDiffusion(z, voltage, temperature, charge);
 
 	sigma = std::sqrt(fSigma0 * fSigma0 + sigma * sigma);  // add sigma0 at t=0
 
 	sigma *= fSigmaCC; // apply correction factor to take repulsion into account, when needed to describe data
 
-	if (sigma == 0)  // tread not defined calculation input
-		return 1.;
+	// Tread not defined calculation input
+	if (sigma == 0){
+		if (x_pixel_offset == 0 && y_pixel_offset == 0)
+			return 1.;
+		return 0.;
+	}
+
 	return CalcBivarianteNormalCDFWithLimits(
 			x_pitch * (x_pixel_offset - 1. / 2.),
 			x_pitch * (x_pixel_offset + 1. / 2.),
@@ -339,10 +360,13 @@ double Digitizer::CalcChargeFraction(const double& x, const double& y,
 }
 
 double Digitizer::CalcSigmaDiffusion(const double& length,
-		const double& voltage, const double& temperature)
+		const double& voltage, const double& temperature, const double& charge)
 {
 	/* Calculates the sigma of the diffusion by using the drift time estimate from the
 	 * analytical E-Field solution for a planar detector.
+	 * When repulsion is activated the sigma is calculate taking repulsion into account.
+	 * Ansatz from: Nuclear Instruments and Methods in Physics Research A 606 (2009) 508–516
+	 * with assumption of gaussian cc.
 	 length : the drift length
 	 voltage : the applied voltage
 	 temperature : the temperature in Kelvin
@@ -355,16 +379,85 @@ double Digitizer::CalcSigmaDiffusion(const double& length,
 //	std::cout<<"fVdep\t"<<fVdep<<"\n";
 //
 //	G4cout<<"OLD "<<length * std::sqrt(2. * temperature / voltage * kb_K_e)<<G4endl;
-//	G4cout<<"NEW "<<fSensorThickness * std::sqrt(temperature * kb_K_e / fVdep) *
-//			std::sqrt(std::log(1. + 2./fSensorThickness * fVdep / (voltage - fVdep) * length))<<G4endl;
 
-	if (~fNtype){
-		return fSensorThickness * std::sqrt(temperature * kb_K_e / fVdep) *
-				   std::sqrt(-std::log(1. - 2./fSensorThickness * fVdep / (voltage + fVdep) * length));
+	double drift_time = CalcDriftTime(length, voltage);
+
+	double dt = 1e-3;  // 0.1 ps
+	double t = 0.;  // time
+	double s_t_2 = fSigma0;  // sigma squared
+
+	double epsilon_s_e = 6.24e2;  // Permittivity of silicon [F/um = C/(V*um) = e/(V*um)]]
+
+//	std::cout<<"drift_time "<<drift_time<<std::endl;
+//	std::cout<<"temperature "<<temperature<<std::endl;
+//	std::cout<<"epsilon_s_e "<<epsilon_s_e<<std::endl;
+//	std::cout<<"fMu "<<fMu<<std::endl;
+//	std::cout<<"charge "<<charge<<std::endl;
+//	std::cout<<"fSigma0 "<<fSigma0<<std::endl;
+
+	double D = getD();
+//	std::cout<<"D "<<D<<std::endl;
+	if (fRepulsion) {
+		// Time evolution can only be calculated for sigma(t0) != 0.
+		if (s_t_2 == 0.)
+			G4Exception("Digitizer::CalcSigmaDiffusion",
+			                        "Error", FatalException, "Charge cloud evolution with time including repulsion can only be calculated for finite charge cloud width at start!");
+		// Simple numerical integration
+		while (t < drift_time){
+			double D_add = fMu * charge / (24. * pow(pi, 3. / 2.) * epsilon_s_e * s_t_2);
+			s_t_2 += 2. * (D + D_add) * dt * 1e-3;
+			t += dt;
+		}
+
+		return std::sqrt(s_t_2) * um;
 	}
 
-	return fSensorThickness * std::sqrt(temperature * kb_K_e / fVdep) *
-		   std::sqrt(std::log(1. + 2./fSensorThickness * fVdep / (voltage - fVdep) * length));
+	//FIXME: calculate units right, this is ugly
+	double sigma = std::sqrt(2. * fMu * um * um * 1e-3 * kb_K_e * temperature * drift_time);
+
+//	std::cout<<"sigma "<<G4BestUnit(sigma, "Length")<<std::endl;
+
+//	G4cout<<"NEW sigma "<<G4BestUnit(tmp_s, "Length")<<G4endl;
+//	G4cout<<"ptype sigma "<<G4BestUnit(fSensorThickness * std::sqrt(temperature * kb_K_e / fVdep) *
+//			   std::sqrt(-std::log(1. - 2./fSensorThickness * fVdep / (voltage + fVdep) * length)), "Length")<<G4endl;
+//	G4cout<<"ntpye sigma "<<G4BestUnit(fSensorThickness * std::sqrt(temperature * kb_K_e / fVdep) *
+//			   std::sqrt(std::log(1. + 2./fSensorThickness * fVdep / (voltage - fVdep) * length)), "Length")<<G4endl;
+//	G4cout<<"NEW drift time "<<G4BestUnit(tmp_t, "Time")<<G4endl;
+
+//	if (!fNtype){
+//		double sig_old = fSensorThickness * std::sqrt(temperature * kb_K_e / fVdep) * std::sqrt(-std::log(1. - 2./fSensorThickness * fVdep / (voltage + fVdep) * length));
+//			if(sigma != sig_old){
+//				std::cout<<"sigma "<<sigma<<std::endl;
+//				std::cout<<"sig_old "<<sig_old<<std::endl;
+//				assert(false==true);
+//			}
+//		}
+//	else{
+//		double sig_old = fSensorThickness * std::sqrt(temperature * kb_K_e / fVdep) * std::sqrt(std::log(1. + 2./fSensorThickness * fVdep / (voltage - fVdep) * length));
+//		if(sigma != sig_old){
+//						std::cout<<"sigma "<<sigma<<std::endl;
+//						std::cout<<"sig_old "<<sig_old<<std::endl;
+//						assert(false==true);
+//					};
+//	}
+	return sigma;
+}
+
+double Digitizer::CalcDriftTime(const double& length, const double& voltage)
+{
+	/* Calculates the drift time from the
+	 * analytical E-Field solution for a planar detector.
+	 length : the drift length
+	 voltage : the applied voltage
+	 temperature : the temperature in Kelvin
+	 */
+	if (!fNtype){
+		return -std::pow(fSensorThickness/um, 2) / (2. * fMu * fVdep)
+				* std::log(1. - 2. / (fSensorThickness/um) * fVdep / (voltage + fVdep) * length/um) * 1e3;
+	}
+
+	return std::pow(fSensorThickness/um, 2) / (2. * fMu * fVdep)
+					* std::log(1. + 2. / (fSensorThickness/um) * fVdep / (voltage - fVdep) * length/um) * 1e3;
 }
 
 double Digitizer::CalcBivarianteNormalCDFWithLimits(const double& a1,
@@ -416,6 +509,15 @@ double Digitizer::CalcBivarianteNormalCDFWithLimits(const double& a1,
 //			"Cannot calculate hit z-position for initial charge cloud simulation. Decrease sigma0.");
 //	return 0;
 //}
+
+double Digitizer::getD()
+{
+    // Diffusion constant in cm^2/s
+    // mu: mobility in cm^2/sV
+    // T: temp in K
+    double kb_K_e = 8.6173e-5;
+    return kb_K_e * fTemperatur * fMu;
+}
 
 void Digitizer::PrintSettings()
 {
@@ -516,6 +618,24 @@ void Digitizer::SetTrigger(const bool& triggerHits)
 		G4cout << "Set trigger functionality to ON " << G4endl; // FIXME: G4cout + MT not working
 	else
 		G4cout << "Set trigger functionality to OFF " << G4endl; // FIXME: G4cout + MT not working
+}
+
+void Digitizer::SetNtype(const bool& tNtype)
+{
+	fNtype = tNtype;
+	if (fNtype)
+		G4cout << "Set n-type bulk" << G4endl; // FIXME: G4cout + MT not working
+	else
+		G4cout << "Set p-type bulk" << G4endl; // FIXME: G4cout + MT not working
+}
+
+void Digitizer::SetRepulsion(const bool& tRepulsion)
+{
+	fRepulsion = tRepulsion;
+	if (fRepulsion)
+		G4cout << "Take repulsion into account" << G4endl; // FIXME: G4cout + MT not working
+	else
+		G4cout << "Diffusion only" << G4endl; // FIXME: G4cout + MT not working
 }
 
 double Digitizer::coth(const double& x)
