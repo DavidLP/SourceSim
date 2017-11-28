@@ -65,6 +65,18 @@ DigitizerMessenger::DigitizerMessenger(Digitizer* digitizer)
 	fTriggerCmd->SetParameterName("choice", true);
 	fTriggerCmd->SetDefaultValue((G4int) 0);
 	fTriggerCmd->AvailableForStates(G4State_Idle);
+
+	fTypeCmd = new G4UIcmdWithAnInteger("/digitizer/ntype", this);
+	fTypeCmd->SetGuidance("Set sensor bulk type");
+	fTypeCmd->SetParameterName("choice", true);
+	fTypeCmd->SetDefaultValue((G4int) 0);
+	fTypeCmd->AvailableForStates(G4State_Idle);
+
+	fRepCmd = new G4UIcmdWithAnInteger("/digitizer/repulsion", this);
+	fRepCmd->SetGuidance("Activate repulsion for charge clound calculation");
+	fRepCmd->SetParameterName("choice", true);
+	fRepCmd->SetDefaultValue((G4int) 0);
+	fRepCmd->AvailableForStates(G4State_Idle);
 }
 
 DigitizerMessenger::~DigitizerMessenger()
@@ -115,6 +127,20 @@ void DigitizerMessenger::SetNewValue(G4UIcommand * command, G4String newValue)
 			fDigitizer->SetTrigger(true);
 		else
 			fDigitizer->SetTrigger(false);
+	}
+
+	if (command == fTypeCmd) {
+		if (fTypeCmd->GetNewIntValue(newValue) > 0)
+			fDigitizer->SetNtype(true);
+		else
+			fDigitizer->SetNtype(false);
+	}
+
+	if (command == fRepCmd) {
+		if (fRepCmd->GetNewIntValue(newValue) > 0)
+			fDigitizer->SetRepulsion(true);
+		else
+			fDigitizer->SetRepulsion(false);
 	}
 }
 

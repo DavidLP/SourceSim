@@ -28,6 +28,8 @@ class DigitizerMessenger: public G4UImessenger {
 		G4UIcmdWithADoubleAndUnit* fInitChargeCloudCmd;
 		G4UIcmdWithADouble* fCorrChargeCloudCmd;
 		G4UIcmdWithAnInteger* fTriggerCmd;
+		G4UIcmdWithAnInteger* fTypeCmd;
+		G4UIcmdWithAnInteger* fRepCmd;
 };
 
 #endif

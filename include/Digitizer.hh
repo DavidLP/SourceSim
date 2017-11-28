@@ -26,6 +26,8 @@ class Digitizer: public G4VDigitizerModule {
 		void SetInitChargeCloudSigma(const G4double&); // the initial spacing of the charge cloud sigma [um]
 		void SetChargeCloudSigmaCorrection(const G4double&); // the initial spacing of the charge cloud sigma [um]
 		void SetTrigger(const bool&); // the detector hits are only stored if a trigger exists in the event
+		void SetNtype(const bool&); // the sensor bulk type
+		void SetRepulsion(const bool& tRepulsion); // calculate sigma charge cloud including repulsion
 
 		void PrintSettings();
 
@@ -33,8 +35,9 @@ class Digitizer: public G4VDigitizerModule {
 		void AddHitToDigits(std::map<G4int, DetHit*>::const_iterator iHit, PixelDigitsCollection* digits);
 		void AddChargeToDigits(const int& column, const int& row, const double& charge, PixelDigitsCollection* digits);
 
-		double CalcChargeFraction(const double& x, const double& y, const double& z, const double& x_pitch, const double& y_pitch, const double& voltage, const int& x_pixel_offset, const int& y_pixel_offset, const double& temperature);
-		double CalcSigmaDiffusion(const double& length, const double& voltage, const double& temperature);
+		double CalcChargeFraction(const double& x, const double& y, const double& z, const double& charge, const double& x_pitch, const double& y_pitch, const double& voltage, const int& x_pixel_offset, const int& y_pixel_offset, const double& temperature);
+		double CalcSigmaDiffusion(const double& length, const double& voltage, const double& temperature, const double& charge);
+		double CalcDriftTime(const double& length, const double& voltage);
 		double CalcBivarianteNormalCDFWithLimits(const double& a1, const double& a2, const double& b1, const double& b2, const double& mu1, const double& mu2, const double& sigma);
 		double CalcZfromSigma(const double& z, const double& sigma);
 
@@ -44,6 +47,7 @@ class Digitizer: public G4VDigitizerModule {
 		double getEHenergyElectrons(const double& temperature);
 		double getEHenergyPhotons(const double& temperature);
 		double getSigmaPhotons(const double& energy);
+		double getD();
 		//Digitization settings
 		bool fCalcChargeCloud;
 
@@ -59,6 +63,7 @@ class Digitizer: public G4VDigitizerModule {
 		G4double fSigma0; // initial charge cloud sigma [um]
 		G4double fSigmaCC; // correction factor for charge cloud sigma
 		bool fNtype;  // detector bulk type
+		bool fRepulsion;  // handle repulsion of charge carriers
 		bool fTriggerHits;  // create hits only if there are hits in the trigger volume
 
 		//Constant variables that cannot be changed yet between runs, yet
@@ -67,6 +72,7 @@ class Digitizer: public G4VDigitizerModule {
 		G4double fPixelPitchY;  // [um]
 		G4int fNcolumns;
 		G4int fNrows;
+		G4double fMu; // Electron mobility in silicon [um2 / us /V]
 
 		PixelDigitsCollection* fPixelDigitsCollection;
 
