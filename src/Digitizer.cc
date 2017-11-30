@@ -31,7 +31,7 @@ Digitizer::Digitizer(G4String name) :
 		fTemperatur(330),  // 56.8 C (uncooled 50-60 is common)
 		fBias(80.),  // bias of the sensor in volt
 		fVdep(45.),  // depletion voltage of sensor in volt
-		fSigma0(0. * um),  // initial charge cloud gaussian profile sigma
+		fSigma0(0. * um),  // initial charge cloud gaussian profile sigma, if 0 calculate from approximation
 		fSigmaCC(1.), // correction factor for charge cloud sigma(z) to take into account also repulsion
 		fNtype(true),  // ntype detector otherwise ptype
 		fRepulsion(false),  // calculates charge cloud sigma with repulsion, needs fSigma0 != 0
@@ -399,9 +399,16 @@ double Digitizer::CalcSigmaDiffusion(const double& length,
 //	std::cout<<"D "<<D<<std::endl;
 	if (fRepulsion) {
 		// Time evolution can only be calculated for sigma(t0) != 0.
-		if (s_t_2 == 0.)
-			G4Exception("Digitizer::CalcSigmaDiffusion",
-			                        "Error", FatalException, "Charge cloud evolution with time including repulsion can only be calculated for finite charge cloud width at start!");
+		// Thus set a sigma0 if needed
+		if (s_t_2 == 0.){
+			s_t_2 = getSigmaPhotons(charge * (fEHPerChargePhotons * eV));
+//			std::cout<<"s_t_2 "<<G4BestUnit(s_t_2, "Length")<<std::endl;
+//			std::cout<<"charge "<<charge<<std::endl;
+//			std::cout<<"energy "<<G4BestUnit(charge * (fEHPerChargePhotons * eV), "Energy")<<std::endl;
+//			std::cout<<"------------------"<<std::endl;
+//			G4Exception("Digitizer::CalcSigmaDiffusion",
+//			                        "Error", FatalException, "Charge cloud evolution with time including repulsion can only be calculated for finite charge cloud width at start!");
+		}
 		// Simple numerical integration
 		while (t < drift_time){
 			double D_add = fMu * charge / (24. * pow(pi, 3. / 2.) * epsilon_s_e * s_t_2);
@@ -711,5 +718,5 @@ double Digitizer::getSigmaPhotons(const double& energy)
 	 Department of Physics, RoyalInstituteofTechnology, Stockholm, Sweden
 	 */
 	// G4cout << " getSigmaPhotons " << G4BestUnit(0.0044 * pow(energy / keV, 1.75), "Length") << G4endl;
-	return 0.0044 * pow(energy / keV, 1.75);
+	return 0.0044 * pow(energy / keV, 1.75) * um;
 }
