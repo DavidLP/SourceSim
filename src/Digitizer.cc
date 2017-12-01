@@ -341,9 +341,12 @@ double Digitizer::CalcChargeFraction(const double& x, const double& y,
 	 */
 	double sigma = CalcSigmaDiffusion(z, voltage, temperature, charge);
 
-	sigma = std::sqrt(fSigma0 * fSigma0 + sigma * sigma);  // add sigma0 at t=0
+	if (!fRepulsion)
+		sigma = std::sqrt(fSigma0 * fSigma0 + sigma * sigma);  // add sigma0 at t=0
 
 	sigma *= fSigmaCC; // apply correction factor to take repulsion into account, when needed to describe data
+
+//	std::cout<<"\tsigma "<<G4BestUnit(sigma, "Length")<<"\t"<<charge<<std::endl;
 
 	// Tread not defined calculation input
 	if (sigma == 0){
@@ -409,6 +412,14 @@ double Digitizer::CalcSigmaDiffusion(const double& length,
 //			G4Exception("Digitizer::CalcSigmaDiffusion",
 //			                        "Error", FatalException, "Charge cloud evolution with time including repulsion can only be calculated for finite charge cloud width at start!");
 		}
+
+		// Stability criterion
+		// sigma0 = 0.1 - 0.5 um is const.
+		// but sigma 0 < 0.1 um can lead to
+		// numerical instabilities
+		if (s_t_2 < 0.1*um)
+			s_t_2 = 0.1*um;
+//		std::cout<<"s_t_2 "<<G4BestUnit(s_t_2, "Length");
 		// Simple numerical integration
 		while (t < drift_time){
 			double D_add = fMu * charge / (24. * pow(pi, 3. / 2.) * epsilon_s_e * s_t_2);
